@@ -32,8 +32,18 @@ Commit message cần viết bằng tiếng Việt không dấu hoặc tiếng An
 * `chore:` Cài đặt thư viện, cấu hình môi trường, sửa `.gitignore` (vd: `chore: them pyodbc vao requirements`)
 
 ---
+## 3. Quy Chuẩn Đặt Tên (Naming Conventions - PEP 8)
 
-## 3. Quy Trình Làm Việc Hằng Ngày (Daily Workflow)
+| Đối tượng | Quy tắc | Ví dụ chuẩn | Không nên dùng |
+| :--- | :--- | :--- | :--- |
+| **Biến (Variables)** | `snake_case` (chữ thường, nối gạch dưới) | `total_amount`, `store_id` | `totalAmount`, `Total_Amount` |
+| **Hàm / Phương thức** | `snake_case` (thường bắt đầu bằng động từ) | `get_inventory()`, `calculate_total()` | `GetInventory()`, `calculateTotal()` |
+| **Lớp (Classes / Models)**| `PascalCase` (viết hoa chữ đầu mỗi từ) | `StoreInventory`, `SalesOrder` | `store_inventory`, `salesOrder` |
+| **Hằng số (Constants)** | `UPPER_SNAKE_CASE` (in hoa toàn bộ) | `MAX_STOCK_ALERT`, `JWT_SECRET_KEY` | `maxStockAlert`, `Max_Stock_Alert` |
+| **File / Module** | `snake_case` (chữ thường toàn bộ) | `database.py`, `sales_router.py` | `Database.py`, `salesRouter.py` |
+| **Package / Thư mục** | `lowercase` (chữ thường ngắn gọn) | `routers/`, `schemas/`, `models/` | `Routers/`, `my_schemas/` |
+| **Biến riêng tư (Private)**| `_snake_case` (tiền tố 1 dấu gạch dưới) | `_verify_token()`, `_db_conn` | `verify_token_private()` |
+## 4. Quy Trình Làm Việc Hằng Ngày (Daily Workflow)
 
 ### Bước 1: Cập nhật code mới nhất từ nhóm
 Trước khi bắt đầu code tính năng mới, luôn đồng bộ nhánh `main` về máy:
