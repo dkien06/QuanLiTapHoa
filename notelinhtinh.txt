@@ -1,0 +1,12 @@
+Kích venv:
+backend\.venv\Scripts\Activate.ps1
+# Hoặc nếu đang ở trong thư mục backend:
+# .venv\Scripts\Activate.ps1
+
+Chạy backend:
+# Cách 1: vào thư mục backend rồi chạy
+cd backend
+uvicorn app.main:app --reload
+
+# Cách 2: chạy từ thư mục gốc
+uvicorn backend.app.main:app --reload
