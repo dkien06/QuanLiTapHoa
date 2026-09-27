@@ -1,30 +1,62 @@
-# KIẾN TRÚC HỆ THỐNG - QUẢN LÝ TẠP HÓA B2B
+# KIẾN TRÚC & CẤU TRÚC DỰ ÁN - QUẢN LÝ TẠP HÓA B2B
 
-## 1. Mô hình kiến trúc: Client - Server (Decoupled Architecture)
-Dự án được tổ chức theo mô hình tách biệt hoàn toàn giữa giao diện và xử lý nghiệp vụ, giao tiếp với nhau thông qua HTTP RESTful API.
+## 1. Mô hình Kiến trúc
+Hệ thống phát triển theo mô hình **Client - Server (Decoupled)**:
+- **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS v4.
+- **Backend:** FastAPI (Python 3.13+) + SQLAlchemy 2.0 Async + PostgreSQL.
+- **Giao tiếp:** RESTful API (JSON).
 
-- **Frontend (Tầng hiển thị):** Sử dụng React và TypeScript để quản lý giao diện, tương tác người dùng tại quầy.
-- **Backend (Tầng nghiệp vụ & Dữ liệu):** Sử dụng FastAPI (Python) để xử lý logic tính toán, trừ kho, đồng bộ đơn hàng B2B.
-- **Data Access Layer (Tầng truy cập dữ liệu):** Sử dụng SQLAlchemy kết hợp `pyodbc` để tương tác trực tiếp với cơ sở dữ liệu Microsoft SQL Server.
-- **Model Layer:** Định nghĩa thực thể bằng SQLAlchemy (ánh xạ bảng CSDL) và Pydantic (kiểm tra tính hợp lệ của dữ liệu đầu vào/ra).
+---
 
-## 2. Cấu trúc thư mục (Monorepo Structure)
+## 2. Cấu trúc Thư mục Dự án (Project Structure)
+
 ```text
-QuanLiTapHoa/
-├── README.md                 <-- Hướng dẫn cài đặt, chạy dự án
-├── requirements.txt          <-- Quản lý thư viện Python (FastAPI, SQLAlchemy, pyodbc)
-├── .gitignore                <-- Quy định các file/thư mục không đẩy lên Git
-├── frontend/                 <-- [FRONTEND CODE]
-│   ├── package.json          <-- Quản lý thư viện Node.js (React, Axios)
+FastAPIProject/
+│
+├── backend/                              # [MÃ NGUỒN BACKEND - FASTAPI]
+│   ├── app/
+│   │   ├── core/                         # Cấu hình cốt lõi
+│   │   │   ├── config.py                 # Đọc cấu hình & biến môi trường (.env)
+│   │   │   └── database.py               # Kết nối CSDL & Quản lý AsyncSession (get_db)
+│   │   ├── routers/                      # Các API Endpoints
+│   │   │   ├── inventory.py              # API Quản lý kho, kiểm kê, cảnh báo tồn
+│   │   │   └── pos.py                    # API Bán hàng tại quầy (POS, quét mã vạch)
+│   │   ├── models.py                     # Thực thể CSDL (SQLAlchemy Models)
+│   │   ├── schemas.py                    # Định dạng dữ liệu Request / Response (Pydantic)
+│   │   └── main.py                       # Khởi chạy FastAPI, cấu hình CORS & Router
+│   ├── .env.example                      # File mẫu biến môi trường Backend
+│   └── requirements.txt                  # Danh sách thư viện Python cần cài đặt
+│
+├── frontend/                             # [MÃ NGUỒN FRONTEND - REACT + TYPESCRIPT]
+│   ├── public/                           # Tài nguyên tĩnh (Icon SVG, Favicon)
 │   ├── src/
-│   │   ├── components/       <-- UI Components dùng chung (Button, Table, Modal)
-│   │   ├── features/         <-- Chia module nghiệp vụ (POS, Kho, Đơn hàng B2B)
-│   │   ├── services/         <-- Gọi API (Axios instance để giao tiếp với Backend)
-│   │   └── types/            <-- Định nghĩa các TypeScript Interface
-└── app/                      <-- [BACKEND CODE]
-    ├── main.py               <-- Điểm khởi chạy FastAPI, cấu hình CORS
-    ├── database.py           <-- Cấu hình kết nối SQL Server & Quản lý Session
-    ├── models/               <-- Các Entities SQLAlchemy (User, Store, Product...)
-    ├── schemas/              <-- Các Pydantic Models (Validate Request/Response)
-    ├── routers/              <-- Các API Endpoints (Nhận request từ Frontend)
-    └── utils/                <-- Các hàm tiện ích (Băm mật khẩu, xử lý JWT Token)
+│   │   ├── assets/                       # Hình ảnh minh họa, logo
+│   │   ├── components/                   # Các UI Components tái sử dụng
+│   │   │   └── auth/                     # Form Đăng nhập (LoginForm), Đăng ký (RegisterForm)
+│   │   ├── pages/                        # Các màn hình chính (LoginPage...)
+│   │   ├── services/                     # Tầng gọi API Backend (Axios instance, AuthService)
+│   │   ├── styles/                       # Hệ thống CSS dùng chung
+│   │   │   ├── index.css                 # Master CSS import tất cả các file style
+│   │   │   ├── variables.css             # Biến màu sắc POS, font chữ, bo góc, dark mode
+│   │   │   ├── base.css                  # Reset CSS mặc định, custom scrollbar
+│   │   │   ├── components.css            # Style nút (.btn), thẻ (.card), bảng (.table), badge
+│   │   │   ├── animations.css            # Hiệu ứng chuyển động (Fade-in, Pulse, Skeleton)
+│   │   │   └── utilities.css             # Tiện ích (Kính mờ glass, định dạng giá tiền)
+│   │   ├── types/                        # Khai báo kiểu TypeScript (User, Role, Order...)
+│   │   ├── App.tsx                       # Component gốc điều hướng giao diện
+│   │   ├── main.tsx                      # Điểm gắn kết React vào DOM
+│   │   └── index.css                     # Import Tailwind CSS và thư mục styles
+│   ├── package.json                      # Danh sách dependencies & scripts Node.js
+│   ├── tsconfig.json                     # Cấu hình TypeScript
+│   └── vite.config.ts                    # Cấu hình Vite build tool
+│
+├── docs/                                 # [TÀI LIỆU DỰ ÁN]
+│   ├── ARCHITECHTURE.md                  # Cấu trúc dự án & Kiến trúc (File này)
+│   ├── REQUIREMENTS.md                   # Đặc tả yêu cầu & luồng người dùng
+│   └── TASK.md                           # Danh sách nhiệm vụ thực hiện
+│
+├── BUSINESS_LOGIC.md                     # Quy tắc nghiệp vụ lõi (Tính tiền, trừ kho B2B)
+├── DATABASE_SCHEMA.md                    # Thiết kế chi tiết bảng CSDL
+├── CONTRIBUTING.md                       # Hướng dẫn đóng góp mã nguồn
+└── README.md                             # Hướng dẫn cài đặt & chạy dự án
+```

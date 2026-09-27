@@ -2,31 +2,93 @@
 
 Dự án phát triển phần mềm quản lý bán lẻ tại quầy cho các tiệm tạp hóa nhỏ lẻ kết hợp phân hệ đặt hàng tự động từ xưởng / nhà cung cấp thực phẩm.
 
+---
+
 ## 🛠 Tech Stack
-* **Backend:** Python, FastAPI, SQLAlchemy ORM, Pydantic, Uvicorn
-* **Database:** Microsoft SQL Server (MSSQL) qua `pyodbc`
-* **Frontend:** React, TypeScript, Tailwind CSS / Ant Design, Axios
+
+* **Backend:** Python 3.10+, FastAPI, SQLAlchemy ORM, Pydantic, Uvicorn
+* **Database:** SQLite (Development) / Microsoft SQL Server (Production)
+* **Frontend:** React 19, TypeScript, Tailwind CSS, Lucide Icons, Axios, Vite
 * **Kiến trúc:** RESTful API & Decoupled Client-Server
 
-## 👥 Phân quyền người dùng
-1. **Chủ tiệm tạp hóa (`GROCERY_OWNER`):** Quét mã vạch bán hàng, theo dõi tồn kho tại quầy, tạo đơn nhập hàng (tự động/thủ công), ghi nhận hóa đơn điện tử và theo dõi quỹ tiền (`balance`).
-2. **Nhà cung cấp / Xưởng (`SUPPLIER_OWNER`):** Tiếp nhận đơn đặt hàng từ tạp hóa, duyệt đơn (tự động trừ kho xưởng), cập nhật tiến độ giao hàng và điều chỉnh tồn kho sản xuất.
+---
 
-## 🚀 Khởi chạy hệ thống (Local Development)
+## 📋 Yêu cầu hệ thống (Prerequisites)
 
-### Yêu cầu tiên quyết
-* Python 3.10+
-* SQL Server & ODBC Driver 17/18 for SQL Server
-* Node.js 18+ (Dành cho Frontend)
+Trước khi khởi chạy, máy tính của bạn cần được cài đặt sẵn:
+1. **Python:** version `3.10` trở lên.
+2. **Node.js:** version `18.0` trở lên (kèm `npm`).
+3. **Git:** để clone dự án.
 
-### Cài đặt Backend (FastAPI)
+---
+
+## 🚀 Hướng Dẫn Khởi Chạy Dự Án Cho Người Mới (Quick Start)
+
+### Bước 1: Clone dự án về máy
 ```bash
-# 1. Tạo và kích hoạt môi trường ảo
-python -m venv .venv
-.venv\Scripts\activate  # Trên Windows
+git clone <URL_REPOS_CỦA_BẠN>
+cd FastAPIProject
+```
 
-# 2. Cài đặt thư viện
-pip install -r requirements.txt
+### Bước 2: Cấu hình biến môi trường
+Tạo file `.env` từ file mẫu `.env.example`:
+- **Trên Linux/macOS:**
+  ```bash
+  cp .env.example .env
+  ```
+- **Trên Windows (CMD / PowerShell):**
+  ```powershell
+  copy .env.example .env
+  ```
 
-# 3. Khởi chạy Backend Server
-uvicorn app.main:app --reload
+---
+
+### Bước 3: Khởi chạy Backend (FastAPI)
+
+1. **Tạo và kích hoạt môi trường ảo Python:**
+   - **Windows:**
+     ```powershell
+     python -m venv .venv
+     .venv\Scripts\activate
+     ```
+   - **Linux / macOS:**
+     ```bash
+     python3 -m venv .venv
+     source .venv/bin/activate
+     ```
+
+2. **Cài đặt thư viện phụ thuộc:**
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+3. **Khởi chạy Server Backend:**
+   ```bash
+   uvicorn backend.app.main:app --reload --port 8000
+   ```
+   > 🌐 **API Documentation:** Sau khi chạy, mở trình duyệt truy cập `http://localhost:8000/docs` để xem tài liệu Swagger UI.
+
+---
+
+### Bước 4: Khởi chạy Frontend (React + TypeScript)
+
+Mở một cửa sổ Terminal/Command Prompt mới:
+
+1. **Di chuyển vào thư mục Frontend:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Cài đặt thư viện Node.js:**
+   ```bash
+   npm install
+   ```
+
+3. **Khởi chạy Development Server:**
+   ```bash
+   npm run dev
+   ```
+   > 💻 **Giao diện Web:** Mở trình duyệt truy cập `http://localhost:3000` (hoặc URL hiển thị trên terminal) để trải nghiệm màn hình Đăng nhập.
+
+---
+
