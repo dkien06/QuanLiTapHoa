@@ -4,7 +4,7 @@ from uuid import UUID
     
 from pydantic import BaseModel, ConfigDict, Field
     
-from app.models.enums import UserRole
+from app.models.enums import UserRole, StoreType
 
 
 """
@@ -43,3 +43,24 @@ class UserResponse(BaseModel):
 
     # Cấu hình Pydantic v2 cho phép đọc trực tiếp từ SQLAlchemy Model
     model_config = ConfigDict(from_attributes=True)
+
+"""
+schemas cho tạo tài khoản mới
+"""
+
+class RegisterOwnerRequest(BaseModel):
+    store_name: str = Field(..., min_length=2, max_length=150, description="Ten cua hang")
+    store_type: StoreType = Field(default=StoreType.GROCERY, description="Loai cua hang")
+    store_address: Optional[str] = Field(None, description="Dia chi")
+    store_phone: Optional[str] = Field(None, description= "SDT cua hang")
+
+    username: str = Field(..., min_length=3, max_length=50, description="Tên đăng nhập")
+    password: str = Field(..., min_length=6, description="Mật khẩu")
+    full_name: str = Field(..., min_length=2, max_length=100, description="Họ và tên chủ quán")
+    phone: Optional[str] = Field(None, description="SĐT chủ quán")
+
+class StaffCreate(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50, description="Tên đăng nhập")
+    password: str = Field(..., min_length=6, description="Mật khẩu")
+    full_name: str = Field(..., min_length=2, max_length=100, description="Họ và tên nhan vien")
+    phone: Optional[str] = Field(None, description="SĐT nhan vien")
