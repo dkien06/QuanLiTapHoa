@@ -1,37 +1,66 @@
-export type UserRole = 'GROCERY_OWNER' | 'SUPPLIER_OWNER';
+export type UserRole = 'OWNER';
+export type StoreType = 'GROCERY' | 'SUPPLIER';
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   fullName: string;
   phone: string;
-  email?: string;
   role: UserRole;
-  storeName?: string;
-  storeAddress?: string;
+  storeId: string;
+  storeType: StoreType;
+  storeName: string;
+  storeAddress: string;
 }
 
 export interface LoginCredentials {
   username: string;
   password: string;
-  role: UserRole;
 }
 
 export interface RegisterCredentials {
-  fullName: string;
-  phone: string;
-  email?: string;
   username: string;
   password: string;
-  role: UserRole;
+  fullName: string;
+  phone: string;
   storeName: string;
-  storePhone?: string;
-  storeAddress?: string;
+  storeType: StoreType;
+  storePhone: string;
+  storeAddress: string;
 }
 
-export interface AuthResponse {
+export interface LoginResponse {
   success: boolean;
   message: string;
-  token?: string;
-  user?: User;
+  token: string;
+  tokenType: string;
+  expiresIn: number;
+  user: User;
+}
+
+export interface RegisterResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface AuthErrorDetail {
+  code?: string;
+  message?: string;
+  fields?: Record<string, string>;
+}
+
+export interface FastApiValidationErrorItem {
+  loc: (string | number)[];
+  msg: string;
+  type: string;
+}
+
+export interface AuthErrorResponse {
+  detail?: AuthErrorDetail | string | FastApiValidationErrorItem[];
+}
+
+export interface AuthError extends Error {
+  code?: string;
+  fields?: Record<string, string>;
+  status?: number;
 }

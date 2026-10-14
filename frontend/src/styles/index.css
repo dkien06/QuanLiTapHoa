@@ -1,9 +1,0 @@
-/* ==========================================================================
-   MASTER STYLESHEET - QUẢN LÝ TẠP HÓA & POS SYSTEM
-   ========================================================================== */
-
-@import './variables.css';
-@import './base.css';
-@import './components.css';
-@import './animations.css';
-@import './utilities.css';
