@@ -12,7 +12,7 @@ import type {
 } from '../types/auth';
 
 // Chuyển sang false khi backend đã sẵn sàng
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 class CustomAuthError extends Error implements AuthError {
   code?: string;
@@ -98,13 +98,28 @@ export const authService = {
     }
 
     try {
-      const response = await api.post<LoginResponse>('/auth/login', credentials);
-      const data = response.data;
+      const response = await api.post<{ access_token: string; token_type: string }>('/auth/login', {
+        username: credentials.username,
+        password: credentials.password,
+      });
+      const { access_token, token_type } = response.data;
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', access_token);
 
-      return data;
+      // Lấy profile người dùng hiện tại qua endpoint /auth/me
+      const user = await this.getCurrentUser();
+      if (!user) {
+        throw new CustomAuthError('Không thể lấy thông tin người dùng sau khi đăng nhập.', 'FETCH_USER_FAILED');
+      }
+
+      return {
+        success: true,
+        message: 'Đăng nhập thành công.',
+        token: access_token,
+        tokenType: token_type,
+        expiresIn: 86400,
+        user,
+      };
     } catch (error: unknown) {
       throw this.handleAuthError(error);
     }
@@ -149,8 +164,24 @@ export const authService = {
     }
 
     try {
-      const response = await api.post<RegisterResponse>('/auth/register', data);
-      return response.data;
+      // Map từ camelCase của frontend sang snake_case của Backend RegisterOwnerRequest
+      const payload = {
+        username: data.username,
+        password: data.password,
+        full_name: data.fullName,
+        phone: data.phone,
+        store_name: data.storeName,
+        store_type: data.storeType,
+        store_phone: data.storePhone,
+        store_address: data.storeAddress,
+      };
+
+      await api.post('/auth/register', payload);
+
+      return {
+        success: true,
+        message: 'Tạo tài khoản và mở tiệm thành công. Vui lòng đăng nhập.',
+      };
     } catch (error: unknown) {
       throw this.handleAuthError(error);
     }
@@ -173,8 +204,38 @@ export const authService = {
 
     try {
       // Header Authorization Bearer token được gắn tự động qua interceptor trong api.ts
-      const response = await api.get<User>('/auth/me');
-      const user = response.data;
+      interface BackendUserResponse {
+        id: string;
+        username: string;
+        full_name: string;
+        phone: string | null;
+        role: 'OWNER';
+        store_id: string;
+        is_active: boolean;
+        store?: {
+          id: string;
+          name: string;
+          store_type: 'GROCERY' | 'SUPPLIER';
+          phone: string | null;
+          address: string | null;
+        };
+      }
+
+      const response = await api.get<BackendUserResponse>('/auth/me');
+      const data = response.data;
+
+      const user: User = {
+        id: data.id,
+        username: data.username,
+        fullName: data.full_name,
+        phone: data.phone || '',
+        role: data.role,
+        storeId: data.store_id,
+        storeType: data.store?.store_type || 'GROCERY',
+        storeName: data.store?.name || 'Cửa hàng',
+        storeAddress: data.store?.address || '',
+      };
+
       localStorage.setItem('user', JSON.stringify(user));
       return user;
     } catch (error: unknown) {
@@ -221,17 +282,30 @@ export const authService = {
     let message = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
     let fields: Record<string, string> | undefined;
 
+    // Bản đồ ánh xạ tên trường từ snake_case của backend sang camelCase của frontend
+    const fieldMap: Record<string, string> = {
+      full_name: 'fullName',
+      store_name: 'storeName',
+      store_type: 'storeType',
+      store_phone: 'storePhone',
+      store_address: 'storeAddress',
+    };
+
     // Xử lý các kiểu định dạng của detail
     if (typeof detail === 'string') {
       message = detail;
+      if (status === 400 && (detail.toLowerCase().includes('tên đăng nhập') || detail.toLowerCase().includes('username'))) {
+        fields = { username: detail };
+      }
     } else if (Array.isArray(detail)) {
       // FastAPI default 422 validation errors array
       code = 'VALIDATION_ERROR';
       message = 'Dữ liệu không hợp lệ.';
       fields = {};
       detail.forEach((item: FastApiValidationErrorItem) => {
-        const fieldName = String(item.loc[item.loc.length - 1]);
-        fields![fieldName] = item.msg;
+        const rawField = String(item.loc[item.loc.length - 1]);
+        const mappedField = fieldMap[rawField] || rawField;
+        fields![mappedField] = item.msg;
       });
     } else if (typeof detail === 'object' && detail !== null) {
       // Thống nhất chuẩn theo hợp đồng: { code, message, fields }
@@ -246,7 +320,7 @@ export const authService = {
     }
 
     // Áp dụng chuẩn hóa theo status code
-    if (status === 409) {
+    if (status === 409 || (status === 400 && fields?.username)) {
       code = code || 'USERNAME_TAKEN';
       message = message || 'Tên đăng nhập đã tồn tại.';
       if (!fields || Object.keys(fields).length === 0) {

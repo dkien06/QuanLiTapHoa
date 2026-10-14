@@ -27,6 +27,16 @@ class TokenPayload(BaseModel):
     store_id: Optional[str] = None  # Lưu store_id của người dùng
     role: Optional[str] = None      # Vai trò (OWNER / STAFF)
 
+class StoreResponse(BaseModel):
+    id: UUID
+    name: str
+    store_type: StoreType
+    phone: Optional[str] = None
+    address: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserResponse(BaseModel):
     """
     Schema trả về thông tin người dùng (cho /auth/me hoặc sau khi login).
@@ -40,6 +50,7 @@ class UserResponse(BaseModel):
     role: UserRole
     is_active: bool
     created_at: datetime
+    store: Optional[StoreResponse] = None
 
     # Cấu hình Pydantic v2 cho phép đọc trực tiếp từ SQLAlchemy Model
     model_config = ConfigDict(from_attributes=True)

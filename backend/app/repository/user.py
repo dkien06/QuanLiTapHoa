@@ -1,6 +1,7 @@
 from uuid import UUID
 from typing import Optional, List
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -10,7 +11,7 @@ class UserRepository:
         self.db = db
 
     async def get_by_id(self, user_id: UUID) -> Optional[User]:
-        query = select(User).where(User.id == user_id)
+        query = select(User).options(joinedload(User.store)).where(User.id == user_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
