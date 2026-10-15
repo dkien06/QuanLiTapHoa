@@ -37,6 +37,13 @@ export interface CartSummaryData {
 
 export type PaymentMethod = 'CASH' | 'TRANSFER' | 'QR';
 
+export interface BankConfig {
+  bankId: string; // VD: 'ICB', 'VCB', 'MB'
+  bankName: string; // VD: 'Vietcombank', 'MBBank'
+  accountNo: string; // Số tài khoản
+  accountName: string; // Tên chủ tài khoản
+}
+
 export interface SaleOrderDraft {
   id: string;
   orderCode: string;
@@ -48,4 +55,12 @@ export interface SaleOrderDraft {
   storeName: string;
   storeAddress: string;
   customerNote?: string;
+  bankInfo?: BankConfig;
+  qrPayloadUrl?: string;
+}
+
+export interface CreateOrderResult {
+  success: boolean;
+  message: string;
+  order: SaleOrderDraft;
 }

@@ -6,6 +6,7 @@ import type {
   CartSummaryData,
   DiscountType,
   PaymentMethod,
+  BankConfig,
   SaleOrderDraft,
 } from '../types/pos';
 import { authService } from '../services/authService';
@@ -16,7 +17,8 @@ import {
 } from '../components/pos/BarcodeScannerInput';
 import { CartTable } from '../components/pos/CartTable';
 import { CartSummary } from '../components/pos/CartSummary';
-import { ReceiptModal } from '../components/pos/ReceiptModal';
+import { CheckoutModal } from '../components/pos/CheckoutModal';
+import { ReceiptPreviewModal } from '../components/pos/ReceiptPreviewModal';
 import {
   Store,
   Clock,
@@ -25,6 +27,10 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react';
+
+const generateNewOrderCode = () => {
+  return `HD${Math.floor(100000 + Math.random() * 900000)}`;
+};
 
 export const PosPage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,9 +54,12 @@ export const PosPage: React.FC = () => {
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Mã hóa đơn đang xử lý
+  const [currentOrderCode, setCurrentOrderCode] = useState<string>(() => generateNewOrderCode());
+
   // Trạng thái Giỏ hàng
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    // Có sẵn 1 món mẫu để người dùng thấy giao diện ngay từ đầu
+    // Sản phẩm mẫu ban đầu để giao diện trực quan ngay khi mở
     const defaultProduct = posService.getAllProducts()[0];
     if (defaultProduct) {
       return [
@@ -69,15 +78,15 @@ export const PosPage: React.FC = () => {
     return [];
   });
 
-  // Trạng thái Tổng kết
+  // Trạng thái Giảm giá
   const [discount, setDiscount] = useState<number>(0);
   const [discountType, setDiscountType] = useState<DiscountType>('FIXED');
-  const [customerPaid, setCustomerPaid] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
 
-  // Trạng thái Modal Hóa đơn
+  // Trạng thái Modals
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
+  const [isReceiptPreviewOpen, setIsReceiptPreviewOpen] = useState<boolean>(false);
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState<boolean>(false);
   const [completedOrder, setCompletedOrder] = useState<SaleOrderDraft | null>(null);
-  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   // Cập nhật đồng hồ thời gian thực
   useEffect(() => {
@@ -103,8 +112,6 @@ export const PosPage: React.FC = () => {
     }
 
     const finalTotal = Math.max(0, subtotal - discountAmount);
-    const effectivePaid = customerPaid > 0 ? customerPaid : finalTotal;
-    const changeAmount = Math.max(0, effectivePaid - finalTotal);
 
     return {
       itemCount,
@@ -114,10 +121,10 @@ export const PosPage: React.FC = () => {
       discountType,
       discountAmount,
       finalTotal,
-      customerPaid: effectivePaid,
-      changeAmount,
+      customerPaid: finalTotal,
+      changeAmount: 0,
     };
-  }, [cartItems, discount, discountType, customerPaid]);
+  }, [cartItems, discount, discountType]);
 
   const summary = computeSummary();
 
@@ -143,7 +150,7 @@ export const PosPage: React.FC = () => {
         });
       }
 
-      // Chưa có trong giỏ -> Thêm dòng mới
+      // Chưa có trong giỏ -> Thêm dòng mới lên đầu
       const newItem: CartItem = {
         productId: product.id,
         barcode: product.barcode,
@@ -162,7 +169,6 @@ export const PosPage: React.FC = () => {
   // Cập nhật số lượng mặt hàng
   const handleUpdateQuantity = useCallback((productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      // Giảm về 0 -> Xóa món
       setCartItems((prev) => prev.filter((item) => item.productId !== productId));
       return;
     }
@@ -190,60 +196,82 @@ export const PosPage: React.FC = () => {
   const handleClearCart = useCallback(() => {
     setCartItems([]);
     setDiscount(0);
-    setCustomerPaid(0);
+    setCurrentOrderCode(generateNewOrderCode());
   }, []);
 
-  // Kích hoạt thanh toán
-  const handleCheckout = useCallback(async () => {
-    if (cartItems.length === 0) return;
+  // Mở Checkout Modal khi ấn nút thanh toán hoặc F9
+  const handleOpenCheckout = useCallback(() => {
+    if (cartItems.length === 0 || summary.finalTotal <= 0) return;
+    setIsCheckoutOpen(true);
+  }, [cartItems.length, summary.finalTotal]);
 
-    const draftOrder: SaleOrderDraft = {
-      id: `ord-${Date.now()}`,
-      orderCode: `HD${Math.floor(100000 + Math.random() * 900000)}`,
-      createdAt: new Date().toLocaleString('vi-VN'),
-      items: [...cartItems],
-      summary: { ...summary },
-      paymentMethod,
-      cashierName: currentUser.fullName || 'Thu ngân',
-      storeName: currentUser.storeName || 'Tạp hóa Bình An',
-      storeAddress: currentUser.storeAddress || '123 Nguyễn Trãi',
-    };
+  // Xử lý xác nhận thanh toán từ CheckoutModal
+  const handleConfirmPayment = useCallback(
+    async (paymentData: {
+      paymentMethod: PaymentMethod;
+      customerPaid: number;
+      changeAmount: number;
+      bankInfo?: BankConfig;
+    }) => {
+      if (cartItems.length === 0) return;
 
-    await posService.checkoutOrder(draftOrder);
-    setCompletedOrder(draftOrder);
-    setIsReceiptOpen(true);
-  }, [cartItems, summary, paymentMethod, currentUser]);
+      setIsProcessingCheckout(true);
 
-  // Tạo đơn mới sau khi xem hóa đơn
+      const draftOrder: SaleOrderDraft = {
+        id: `ord-${Date.now()}`,
+        orderCode: currentOrderCode,
+        createdAt: new Date().toLocaleString('vi-VN'),
+        items: [...cartItems],
+        summary: {
+          ...summary,
+          customerPaid: paymentData.customerPaid,
+          changeAmount: paymentData.changeAmount,
+        },
+        paymentMethod: paymentData.paymentMethod,
+        cashierName: currentUser.fullName || 'Thu ngân',
+        storeName: currentUser.storeName || 'Tạp hóa Bình An',
+        storeAddress: currentUser.storeAddress || '123 Nguyễn Trãi, Q.5, TP.HCM',
+        bankInfo: paymentData.bankInfo,
+      };
+
+      try {
+        const result = await posService.createSalesOrder(draftOrder);
+        setCompletedOrder(result.order);
+        setIsCheckoutOpen(false);
+        setIsReceiptPreviewOpen(true);
+      } finally {
+        setIsProcessingCheckout(false);
+      }
+    },
+    [cartItems, currentOrderCode, summary, currentUser]
+  );
+
+  // Tạo đơn mới sau khi xem / in hóa đơn
   const handleNewOrder = useCallback(() => {
-    setIsReceiptOpen(false);
+    setIsReceiptPreviewOpen(false);
     setCompletedOrder(null);
     handleClearCart();
     scannerRef.current?.focusInput();
   }, [handleClearCart]);
 
-  // Đăng ký Phím tắt toàn trang (F2: focus scanner, F9: checkout, Esc: đóng modal)
+  // Đăng ký Phím tắt toàn trang (F2: focus scanner, F9: mở checkout modal)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Khi modal đang mở, để modal tự xử lý phím tắt của nó
+      if (isCheckoutOpen || isReceiptPreviewOpen) return;
+
       if (e.key === 'F2') {
         e.preventDefault();
         scannerRef.current?.focusInput();
       } else if (e.key === 'F9') {
         e.preventDefault();
-        if (cartItems.length > 0 && !isReceiptOpen) {
-          handleCheckout();
-        }
-      } else if (e.key === 'Escape') {
-        if (isReceiptOpen) {
-          e.preventDefault();
-          setIsReceiptOpen(false);
-        }
+        handleOpenCheckout();
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [cartItems.length, isReceiptOpen, handleCheckout]);
+  }, [isCheckoutOpen, isReceiptPreviewOpen, handleOpenCheckout]);
 
   // Chuyển đổi toàn màn hình
   const toggleFullscreen = () => {
@@ -282,7 +310,7 @@ export const PosPage: React.FC = () => {
                 {currentUser.storeName || 'TẠP HÓA BÌNH AN'}
               </h1>
               <span className="text-[10px] text-blue-300 font-medium">
-                Màn hình Bán lẻ Thu Ngân (POS)
+                Màn hình Bán lẻ Thu Ngân (POS) - Đơn #{currentOrderCode}
               </span>
             </div>
           </div>
@@ -342,20 +370,29 @@ export const PosPage: React.FC = () => {
               setDiscount(disc);
               setDiscountType(type);
             }}
-            onUpdateCustomerPaid={(paid) => setCustomerPaid(paid)}
-            onPaymentMethodChange={(method) => setPaymentMethod(method)}
-            selectedPaymentMethod={paymentMethod}
-            onCheckout={handleCheckout}
+            onCheckout={handleOpenCheckout}
             isDisabled={cartItems.length === 0}
           />
         </div>
       </main>
 
-      {/* Modal Hóa đơn thanh toán xem trước */}
-      <ReceiptModal
+      {/* MODAL 1: Xác Nhận Thanh Toán & Chọn Phương Thức (CheckoutModal) */}
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        orderCode={currentOrderCode}
+        finalTotal={summary.finalTotal}
+        itemCount={summary.itemCount}
+        totalQuantity={summary.totalQuantity}
+        onConfirmPayment={handleConfirmPayment}
+        isProcessing={isProcessingCheckout}
+      />
+
+      {/* MODAL 2: Hóa Đơn Điện Tử Chuẩn In Nhiệt K80 (ReceiptPreviewModal) */}
+      <ReceiptPreviewModal
         order={completedOrder}
-        isOpen={isReceiptOpen}
-        onClose={() => setIsReceiptOpen(false)}
+        isOpen={isReceiptPreviewOpen}
+        onClose={() => setIsReceiptPreviewOpen(false)}
         onNewOrder={handleNewOrder}
       />
     </div>

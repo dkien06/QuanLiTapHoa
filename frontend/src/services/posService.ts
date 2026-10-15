@@ -1,4 +1,24 @@
-import type { Product, SaleOrderDraft } from '../types/pos';
+import type { Product, SaleOrderDraft, BankConfig, CreateOrderResult } from '../types/pos';
+
+// Cấu hình tài khoản ngân hàng thụ hưởng mặc định của tiệm tạp hóa
+export const DEFAULT_BANK_CONFIG: BankConfig = {
+  bankId: 'VCB', // Vietcombank
+  bankName: 'Vietcombank - TMCP Ngoại Thương VN',
+  accountNo: '9893456313816',
+  accountName: 'NGUYEN VAN AN - TIEM BINH AN',
+};
+
+// Hàm sinh URL ảnh mã VietQR động theo chuẩn mở Napas/VietQR
+export const generateVietQRUrl = (
+  bank: BankConfig,
+  amount: number,
+  orderCode: string
+): string => {
+  const cleanAmount = Math.max(0, Math.round(amount));
+  const encodedName = encodeURIComponent(bank.accountName);
+  const encodedInfo = encodeURIComponent(orderCode);
+  return `https://img.vietqr.io/image/${bank.bankId}-${bank.accountNo}-compact2.png?amount=${cleanAmount}&addInfo=${encodedInfo}&accountName=${encodedName}`;
+};
 
 // Danh sách sản phẩm mẫu phong phú đặc trưng cho tiệm tạp hóa Việt Nam
 export const MOCK_PRODUCTS: Product[] = [
@@ -155,13 +175,60 @@ export const posService = {
     );
   },
 
-  // Mô phỏng lưu đơn hàng thanh toán
-  async checkoutOrder(order: SaleOrderDraft): Promise<{ success: boolean; message: string; orderId: string }> {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+  // Lưu và xử lý đơn hàng bán lẻ POS
+  async createSalesOrder(order: SaleOrderDraft): Promise<CreateOrderResult> {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+
+    // Đảm bảo thông tin ngân hàng và link VietQR
+    const finalOrder: SaleOrderDraft = {
+      ...order,
+      bankInfo: order.bankInfo || DEFAULT_BANK_CONFIG,
+      qrPayloadUrl:
+        order.qrPayloadUrl ||
+        (order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'QR'
+          ? generateVietQRUrl(
+              order.bankInfo || DEFAULT_BANK_CONFIG,
+              order.summary.finalTotal,
+              order.orderCode
+            )
+          : undefined),
+    };
+
+    // Lưu vào lịch sử đơn hàng trong localStorage
+    try {
+      const historyStr = localStorage.getItem('pos_sales_history') || '[]';
+      const history: SaleOrderDraft[] = JSON.parse(historyStr);
+      history.unshift(finalOrder);
+      // Giữ tối đa 50 đơn gần nhất
+      localStorage.setItem('pos_sales_history', JSON.stringify(history.slice(0, 50)));
+    } catch {
+      // Bỏ qua lỗi nếu quota vượt mức hoặc môi trường test
+    }
+
     return {
       success: true,
       message: 'Thanh toán đơn hàng thành công!',
-      orderId: order.orderCode,
+      order: finalOrder,
     };
+  },
+
+  // Giữ lại để tương thích ngược
+  async checkoutOrder(order: SaleOrderDraft): Promise<{ success: boolean; message: string; orderId: string }> {
+    const res = await this.createSalesOrder(order);
+    return {
+      success: res.success,
+      message: res.message,
+      orderId: res.order.orderCode,
+    };
+  },
+
+  // Lấy danh sách lịch sử đơn hàng đã bán
+  getOrderHistory(): SaleOrderDraft[] {
+    try {
+      const historyStr = localStorage.getItem('pos_sales_history') || '[]';
+      return JSON.parse(historyStr);
+    } catch {
+      return [];
+    }
   },
 };
