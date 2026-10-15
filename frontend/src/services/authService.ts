@@ -5,6 +5,7 @@ import type {
   LoginResponse,
   RegisterResponse,
   User,
+  UserRole,
   AuthError,
   AuthErrorResponse,
   AuthErrorDetail,
@@ -98,11 +99,11 @@ export const authService = {
     }
 
     try {
-      const response = await api.post<{ access_token: string; token_type: string }>('/auth/login', {
+      const response = await api.post<{ access_token: string; token_type: string; expires_in?: number }>('/auth/login', {
         username: credentials.username,
         password: credentials.password,
       });
-      const { access_token, token_type } = response.data;
+      const { access_token, token_type, expires_in } = response.data;
 
       localStorage.setItem('token', access_token);
 
@@ -117,7 +118,7 @@ export const authService = {
         message: 'Đăng nhập thành công.',
         token: access_token,
         tokenType: token_type,
-        expiresIn: 86400,
+        expiresIn: expires_in ?? 86400,
         user,
       };
     } catch (error: unknown) {
@@ -209,9 +210,10 @@ export const authService = {
         username: string;
         full_name: string;
         phone: string | null;
-        role: 'OWNER';
+        role: UserRole;
         store_id: string;
         is_active: boolean;
+        created_at?: string;
         store?: {
           id: string;
           name: string;
@@ -234,6 +236,7 @@ export const authService = {
         storeType: data.store?.store_type || 'GROCERY',
         storeName: data.store?.name || 'Cửa hàng',
         storeAddress: data.store?.address || '',
+        createdAt: data.created_at,
       };
 
       localStorage.setItem('user', JSON.stringify(user));
