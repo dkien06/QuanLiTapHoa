@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { User } from '../../types/auth';
 import { Store, ShoppingCart, Boxes, BarChart3, LogOut, MapPin } from 'lucide-react';
 
@@ -17,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectMenu,
   onLogout,
 }) => {
+  const navigate = useNavigate();
   return (
     <aside className="w-full md:w-64 bg-slate-900 text-white flex flex-col shrink-0 border-r border-slate-800">
       {/* Brand Header */}
@@ -78,18 +80,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <button
           type="button"
-          onClick={() => onSelectMenu('POS')}
-          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-            activeMenu === 'POS'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-              : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-          }`}
+          onClick={() => navigate('/pos')}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md"
         >
           <div className="flex items-center space-x-3">
-            <ShoppingCart className="w-4 h-4" />
+            <ShoppingCart className="w-4 h-4 text-blue-400" />
             <span>Bán Hàng (POS)</span>
           </div>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">F2</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">F2</span>
         </button>
 
         <button

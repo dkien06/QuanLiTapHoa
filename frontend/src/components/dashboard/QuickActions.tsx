@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { DashboardTab } from './Sidebar';
 import { ShoppingCart, Boxes, FileSpreadsheet, PlusCircle, ArrowUpRight } from 'lucide-react';
 
@@ -7,11 +8,13 @@ interface QuickActionsProps {
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <button
         type="button"
-        onClick={() => onNavigate('POS')}
+        onClick={() => navigate('/pos')}
         className="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-md hover:shadow-lg transition flex items-center justify-between cursor-pointer"
       >
         <div className="flex items-center space-x-3 text-left">
