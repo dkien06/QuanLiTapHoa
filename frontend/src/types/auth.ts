@@ -1,4 +1,4 @@
-export type UserRole = 'OWNER';
+export type UserRole = 'OWNER' | 'STAFF';
 export type StoreType = 'GROCERY' | 'SUPPLIER';
 
 export interface User {
@@ -11,6 +11,7 @@ export interface User {
   storeType: StoreType;
   storeName: string;
   storeAddress: string;
+  createdAt?: string;
 }
 
 export interface LoginCredentials {
