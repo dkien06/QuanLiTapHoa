@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_current_owner
 from app.repository.user import UserRepository
 from app.repository.store import StoreRepository
 from app.services.auth import AuthService
@@ -11,6 +11,8 @@ from app.schemas.auth import (
     UserLogin,
     Token,
     UserResponse,
+    StaffCreate,
+    StaffResponse,
 )
 from app.models.user import User
 
@@ -54,3 +56,15 @@ async def get_me(
     Lấy thông tin tài khoản hiện tại từ Token gửi ở Header
     """
     return current_user
+
+@router.post("/staff", response_model=StaffResponse, status_code=status.HTTP_201_CREATED)
+async def create_staff(
+    data: StaffCreate,
+    current_owner: User = Depends(get_current_owner),
+    auth_service: AuthService = Depends(get_auth_service),
+):
+    """
+    Chủ cửa hàng tạo tài khoản nhân viên.
+    Chỉ tài khoản OWNER mới có quyền gọi API này.
+    """
+    return await auth_service.create_staff(data=data, owner=current_owner)

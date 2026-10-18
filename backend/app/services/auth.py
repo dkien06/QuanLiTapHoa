@@ -6,7 +6,7 @@ from app.models.user import User
 from app.repository.user import UserRepository
 from app.repository.store import StoreRepository
 from app.core.security import verify_password,get_password_hash, create_access_token
-from app.schemas.auth import UserLogin, Token, RegisterOwnerRequest
+from app.schemas.auth import UserLogin, Token, RegisterOwnerRequest, StaffCreate
 
 class AuthService:
     def __init__(self, user_repo: UserRepository, store_repo: StoreRepository):
@@ -57,6 +57,32 @@ class AuthService:
         await self.user_repo.db.commit()
 
         return self._generate_token(user=created_user)
+
+    async def create_staff(self, data: StaffCreate, owner: User) -> User:
+        """
+        Chủ cửa hàng tạo tài khoản nhân viên thuộc cùng cửa hàng.
+        """
+        existing_user = await self.user_repo.get_user_by_name(data.username)
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tên đăng nhập đã được sử dụng"
+            )
+
+        staff_user = User(
+            store_id=owner.store_id,
+            username=data.username,
+            password_hash=get_password_hash(data.password),
+            full_name=data.full_name,
+            phone=data.phone,
+            role=UserRole.STAFF,
+            is_active=True,
+        )
+
+        created_staff = await self.user_repo.create_user(staff_user)
+        await self.user_repo.db.commit()
+
+        return created_staff
 
     async def authenticate_user(self, username: str, password: str)->User:
         user = await self.user_repo.get_user_by_name(username=username)

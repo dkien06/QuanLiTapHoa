@@ -75,3 +75,19 @@ class StaffCreate(BaseModel):
     password: str = Field(..., min_length=6, description="Mật khẩu")
     full_name: str = Field(..., min_length=2, max_length=100, description="Họ và tên nhan vien")
     phone: Optional[str] = Field(None, description="SĐT nhan vien")
+
+class StaffResponse(BaseModel):
+    """
+    Schema trả về thông tin nhân viên sau khi tạo hoặc khi lấy danh sách nhân viên.
+    Tuyệt đối không trả về password_hash.
+    """
+    id: UUID
+    store_id: UUID
+    username: str
+    full_name: str
+    phone: Optional[str] = None
+    role: UserRole
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

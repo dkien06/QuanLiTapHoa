@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.models.enums import UserRole
 from app.models.user import User
 from app.repository.user import UserRepository
 from app.schemas.auth import TokenPayload
@@ -81,4 +82,17 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         )
 
     return user
+
+async def get_current_owner(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Dependency kiểm tra user hiện tại có phải chủ cửa hàng hay không.
+    Chỉ OWNER mới được phép thực hiện các thao tác quản lý nhân viên.
+    """
+    if current_user.role != UserRole.OWNER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Chỉ chủ cửa hàng mới có quyền thực hiện thao tác này"
+        )
+
+    return current_user
 
