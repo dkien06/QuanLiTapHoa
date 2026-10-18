@@ -7,6 +7,8 @@ import { InventoryFilterBar } from '../components/inventory/InventoryFilterBar';
 import { InventoryTable } from '../components/inventory/InventoryTable';
 import { EditProductModal } from '../components/inventory/EditProductModal';
 import { CreatePurchaseOrderModal } from '../components/inventory/CreatePurchaseOrderModal';
+import { PurchaseOrderList } from '../components/inventory/PurchaseOrderList';
+import { purchaseOrderService } from '../services/purchaseOrderService';
 import {
   ArrowLeft,
   ShoppingCart,
@@ -14,6 +16,8 @@ import {
   Store,
   CheckCircle2,
   PackagePlus,
+  Boxes,
+  Truck,
 } from 'lucide-react';
 
 interface InventoryPageProps {
@@ -61,6 +65,10 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ embeddedInDashboar
   // State Modal tạo đơn nhập hàng (FE-04)
   const [isCreatePOModalOpen, setIsCreatePOModalOpen] = useState(false);
 
+  // Sub-Tab Phân Hệ: Tồn kho vs Đơn nhập hàng (FE-05)
+  const [activeSubTab, setActiveSubTab] = useState<'STOCK' | 'PURCHASE_ORDERS'>('STOCK');
+  const [poStats, setPoStats] = useState(() => purchaseOrderService.getOrderStats());
+
   // Toast thông báo
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -82,6 +90,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ embeddedInDashboar
 
     setStats(inventoryService.getInventoryStats());
     setCategories(inventoryService.getCategories());
+    setPoStats(purchaseOrderService.getOrderStats());
   }, [keyword, selectedCategory, onlyLowStock, page, pageSize]);
 
   useEffect(() => {
@@ -214,41 +223,109 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ embeddedInDashboar
           </div>
         )}
 
-        {/* Thanh công cụ lọc & mini stats */}
-        <InventoryFilterBar
-          stats={stats}
-          keyword={keyword}
-          onKeywordChange={handleKeywordChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-          categories={categories}
-          onlyLowStock={onlyLowStock}
-          onToggleLowStock={handleToggleLowStock}
-          totalFiltered={paginatedData.total}
-          totalAll={totalAllProducts}
-          onOpenCreatePOModal={() => setIsCreatePOModalOpen(true)}
-        />
+        {/* Navigation Sub-Tabs: Tồn Kho vs Đơn Nhập Hàng */}
+        <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('STOCK')}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
+              activeSubTab === 'STOCK'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Boxes className="w-4 h-4" />
+            <span>1. Tồn Kho Cửa Hàng</span>
+            <span
+              className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                activeSubTab === 'STOCK'
+                  ? 'bg-blue-800 text-white'
+                  : 'bg-slate-200 text-slate-700'
+              }`}
+            >
+              {totalAllProducts} mã
+            </span>
+          </button>
 
-        {/* Bảng dữ liệu tồn kho */}
-        <InventoryTable
-          products={paginatedData.products}
-          total={paginatedData.total}
-          page={page}
-          pageSize={pageSize}
-          totalPages={paginatedData.totalPages}
-          onPageChange={setPage}
-          onPageSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setPage(1);
-          }}
-          onEditProduct={handleEditProduct}
-          onResetFilters={() => {
-            setKeyword('');
-            setSelectedCategory('ALL');
-            setOnlyLowStock(false);
-            setPage(1);
-          }}
-        />
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('PURCHASE_ORDERS')}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
+              activeSubTab === 'PURCHASE_ORDERS'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Truck className="w-4 h-4" />
+            <span>2. Đơn Nhập Hàng & Theo Dõi</span>
+            {poStats.shippingCount + poStats.pendingCount + poStats.confirmedCount > 0 && (
+              <span
+                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                  activeSubTab === 'PURCHASE_ORDERS'
+                    ? 'bg-amber-400 text-slate-900'
+                    : 'bg-amber-100 text-amber-900 border border-amber-300'
+                }`}
+              >
+                {poStats.shippingCount + poStats.pendingCount + poStats.confirmedCount} đơn
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Tab 1 Content: Tồn Kho & Cảnh Báo Hết Hàng */}
+        {activeSubTab === 'STOCK' && (
+          <>
+            {/* Thanh công cụ lọc & mini stats */}
+            <InventoryFilterBar
+              stats={stats}
+              keyword={keyword}
+              onKeywordChange={handleKeywordChange}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              categories={categories}
+              onlyLowStock={onlyLowStock}
+              onToggleLowStock={handleToggleLowStock}
+              totalFiltered={paginatedData.total}
+              totalAll={totalAllProducts}
+              onOpenCreatePOModal={() => setIsCreatePOModalOpen(true)}
+            />
+
+            {/* Bảng dữ liệu tồn kho */}
+            <InventoryTable
+              products={paginatedData.products}
+              total={paginatedData.total}
+              page={page}
+              pageSize={pageSize}
+              totalPages={paginatedData.totalPages}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+              onEditProduct={handleEditProduct}
+              onResetFilters={() => {
+                setKeyword('');
+                setSelectedCategory('ALL');
+                setOnlyLowStock(false);
+                setPage(1);
+              }}
+            />
+          </>
+        )}
+
+        {/* Tab 2 Content: Theo Dõi Đơn Nhập Hàng & Nhận Hàng (FE-05) */}
+        {activeSubTab === 'PURCHASE_ORDERS' && (
+          <PurchaseOrderList
+            onOpenCreatePOModal={() => setIsCreatePOModalOpen(true)}
+            onOrderReceivedSuccess={(orderCode) => {
+              loadData();
+              setToastMessage(
+                `Đã xác nhận nhận hàng đơn #${orderCode} thành công! Toàn bộ số lượng sản phẩm đã được cộng vào tồn kho.`
+              );
+              setTimeout(() => setToastMessage(null), 4500);
+            }}
+          />
+        )}
 
         {/* Modal chỉnh sửa */}
         <EditProductModal

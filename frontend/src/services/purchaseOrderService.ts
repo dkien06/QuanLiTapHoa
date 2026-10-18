@@ -166,6 +166,151 @@ const generateOrderCode = (type: 'B2B' | 'MANUAL') => {
   return `PO-${type}-${dateStr}-${randomStr}`;
 };
 
+// Dữ liệu đơn nhập hàng mẫu bao phủ cả 5 trạng thái
+const createInitialOrders = (): PurchaseOrderRecord[] => [
+  {
+    id: 'po-seed-001',
+    orderCode: 'PO-B2B-261017-8142',
+    type: 'B2B',
+    status: 'SHIPPING',
+    statusLabel: 'Đang vận chuyển',
+    supplierId: 'sup-002',
+    supplierName: 'Tổng Kho Nước Giải Khát & Đồ Uống Sài Gòn',
+    items: [
+      {
+        productId: 'prod-bev-02',
+        barcode: '8934822212330',
+        name: 'Bia Heineken Sleek lon 330ml',
+        unit: 'lon',
+        quantity: 24,
+        unitPrice: 17500,
+        subtotal: 420000,
+      },
+      {
+        productId: 'prod-bev-01',
+        barcode: '8935049500115',
+        name: 'Nước ngọt Coca-Cola Sleek lon 320ml',
+        unit: 'lon',
+        quantity: 48,
+        unitPrice: 7800,
+        subtotal: 374400,
+      },
+    ],
+    totalAmount: 794400,
+    note: 'Giao trong giờ hành chính, xe tải giao trước 17h chiều',
+    createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'po-seed-002',
+    orderCode: 'PO-B2B-261018-3591',
+    type: 'B2B',
+    status: 'CONFIRMED',
+    statusLabel: 'Xưởng đã duyệt',
+    supplierId: 'sup-001',
+    supplierName: 'Xưởng Thực Phẩm Acecook Việt Nam',
+    items: [
+      {
+        productId: 'prod-acecook-01',
+        barcode: '8934563138164',
+        name: 'Mì Hảo Hảo Tôm chua cay 75g (Thùng 30 gói)',
+        unit: 'gói',
+        quantity: 60,
+        unitPrice: 3600,
+        subtotal: 216000,
+      },
+      {
+        productId: 'prod-acecook-02',
+        barcode: '8934563138225',
+        name: 'Mì Đệ Nhất thịt bằm 82g',
+        unit: 'gói',
+        quantity: 30,
+        unitPrice: 5200,
+        subtotal: 156000,
+      },
+    ],
+    totalAmount: 372000,
+    note: 'Đã thanh toán trước 50% tiền cọc qua VietQR',
+    createdAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'po-seed-003',
+    orderCode: 'PO-B2B-261018-6204',
+    type: 'B2B',
+    status: 'PENDING',
+    statusLabel: 'Chờ xưởng duyệt',
+    supplierId: 'sup-003',
+    supplierName: 'Công ty TNHH Thực phẩm Orion Việt Nam',
+    items: [
+      {
+        productId: 'prod-orion-01',
+        barcode: '8936036010012',
+        name: 'Bánh Chocopie Orion hộp 12 cái',
+        unit: 'hộp',
+        quantity: 20,
+        unitPrice: 42000,
+        subtotal: 840000,
+      },
+      {
+        productId: 'prod-orion-02',
+        barcode: '8936036010081',
+        name: 'Bánh Custas Kem Trứng Hộp 6 cái',
+        unit: 'hộp',
+        quantity: 20,
+        unitPrice: 22000,
+        subtotal: 440000,
+      },
+    ],
+    totalAmount: 1280000,
+    note: 'Đơn đặt bổ sung hàng bán Tết',
+    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'po-seed-004',
+    orderCode: 'PO-MANUAL-261018-1092',
+    type: 'MANUAL',
+    status: 'RECEIVED',
+    statusLabel: 'Đã nhận hàng',
+    supplierName: 'Đại lý Bánh kẹo Chợ Lớn',
+    items: [
+      {
+        barcode: '893600000001',
+        name: 'Keo Dua Ben Tre Hop 300g',
+        unit: 'hộp',
+        quantity: 50,
+        unitPrice: 18000,
+        subtotal: 900000,
+      },
+    ],
+    totalAmount: 900000,
+    note: 'Hàng nhập ngoài thủ công, thanh toán tiền mặt tại quầy',
+    createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+    receivedAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'po-seed-005',
+    orderCode: 'PO-B2B-261016-1934',
+    type: 'B2B',
+    status: 'CANCELLED',
+    statusLabel: 'Đã hủy',
+    supplierId: 'sup-001',
+    supplierName: 'Xưởng Thực Phẩm Acecook Việt Nam',
+    items: [
+      {
+        productId: 'prod-acecook-04',
+        barcode: '8934563138449',
+        name: 'Miến Phú Hương Sườn heo 58g',
+        unit: 'gói',
+        quantity: 24,
+        unitPrice: 8000,
+        subtotal: 192000,
+      },
+    ],
+    totalAmount: 192000,
+    note: 'Xưởng phản hồi tạm hết hàng miến trong kho xuất',
+    createdAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+  },
+];
+
 export const purchaseOrderService = {
   // Lấy danh sách xưởng liên kết
   getSuppliers(): Supplier[] {
@@ -177,17 +322,36 @@ export const purchaseOrderService = {
     return MOCK_SUPPLIERS.find((s) => s.id === id) || null;
   },
 
-  // Lấy lịch sử đơn nhập hàng từ localStorage
+  // Lấy lịch sử đơn nhập hàng từ localStorage (hoặc nạp seed orders)
   getOrderHistory(): PurchaseOrderRecord[] {
+    const initial = createInitialOrders();
     try {
       const stored = localStorage.getItem(PO_STORAGE_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed: PurchaseOrderRecord[] = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Kết hợp các đơn mới tạo với các đơn mẫu nếu chưa có để luôn đủ 5 trạng thái kiểm thử
+          const existingIds = new Set(parsed.map((o) => o.id));
+          const missingSeeds = initial.filter((s) => !existingIds.has(s.id));
+          if (missingSeeds.length > 0) {
+            const combined = [...parsed, ...missingSeeds];
+            localStorage.setItem(PO_STORAGE_KEY, JSON.stringify(combined));
+            return combined;
+          }
+          return parsed;
+        }
       }
     } catch {
       // Fallback
     }
-    return [];
+
+    // Nếu chưa có, nạp danh sách mẫu và lưu vào storage
+    try {
+      localStorage.setItem(PO_STORAGE_KEY, JSON.stringify(initial));
+    } catch {
+      // ignore
+    }
+    return initial;
   },
 
   // Lưu lịch sử đơn nhập hàng
@@ -199,6 +363,152 @@ export const purchaseOrderService = {
     } catch {
       // Bỏ qua lỗi quota
     }
+  },
+
+  // Lọc danh sách đơn nhập hàng theo trạng thái & từ khóa
+  getFilteredOrders(filter: {
+    status?: string;
+    keyword?: string;
+  }): PurchaseOrderRecord[] {
+    const all = this.getOrderHistory();
+    const { status = 'ALL', keyword = '' } = filter;
+    const q = keyword.trim().toLowerCase();
+
+    return all.filter((order) => {
+      // Lọc theo trạng thái
+      if (status && status !== 'ALL') {
+        if (order.status !== status) return false;
+      }
+
+      // Lọc theo từ khóa (Mã đơn, Tên xưởng/nhà cung cấp, Tên món hàng)
+      if (q) {
+        const matchCode = order.orderCode.toLowerCase().includes(q);
+        const matchSupplier = order.supplierName.toLowerCase().includes(q);
+        const matchItem = order.items.some(
+          (i) =>
+            i.name.toLowerCase().includes(q) ||
+            i.barcode.toLowerCase().includes(q)
+        );
+        if (!matchCode && !matchSupplier && !matchItem) return false;
+      }
+
+      return true;
+    });
+  },
+
+  // Thống kê số lượng đơn theo từng trạng thái
+  getOrderStats(): {
+    total: number;
+    pendingCount: number;
+    confirmedCount: number;
+    shippingCount: number;
+    receivedCount: number;
+    cancelledCount: number;
+    totalAmountSpent: number;
+  } {
+    const all = this.getOrderHistory();
+    let pendingCount = 0;
+    let confirmedCount = 0;
+    let shippingCount = 0;
+    let receivedCount = 0;
+    let cancelledCount = 0;
+    let totalAmountSpent = 0;
+
+    all.forEach((o) => {
+      if (o.status === 'PENDING') pendingCount++;
+      else if (o.status === 'CONFIRMED') confirmedCount++;
+      else if (o.status === 'SHIPPING') shippingCount++;
+      else if (o.status === 'RECEIVED') {
+        receivedCount++;
+        totalAmountSpent += o.totalAmount;
+      } else if (o.status === 'CANCELLED') cancelledCount++;
+    });
+
+    return {
+      total: all.length,
+      pendingCount,
+      confirmedCount,
+      shippingCount,
+      receivedCount,
+      cancelledCount,
+      totalAmountSpent,
+    };
+  },
+
+  // Xác nhận đã nhận hàng (Cập nhật sang RECEIVED và TỰ ĐỘNG CỘNG TỒN KHO)
+  confirmReceivedOrder(orderId: string): PurchaseOrderRecord {
+    const history = this.getOrderHistory();
+    const index = history.findIndex((o) => o.id === orderId);
+    if (index === -1) {
+      throw new Error('Không tìm thấy đơn nhập hàng trong hệ thống.');
+    }
+
+    const order = history[index];
+    if (order.status === 'RECEIVED') {
+      return order; // Đã nhận trước đó rồi
+    }
+    if (order.status === 'CANCELLED') {
+      throw new Error('Đơn hàng đã bị hủy, không thể xác nhận nhận hàng.');
+    }
+
+    // 1. Cập nhật trạng thái đơn sang RECEIVED
+    const updatedOrder: PurchaseOrderRecord = {
+      ...order,
+      status: 'RECEIVED',
+      statusLabel: 'Đã nhận hàng',
+      receivedAt: new Date().toISOString(),
+    };
+
+    // 2. Tự động cộng số lượng món hàng vào kho tiệm (inventoryService)
+    order.items.forEach((item) => {
+      inventoryService.addOrUpdateStockFromManualImport({
+        barcode: item.barcode,
+        name: item.name,
+        unit: item.unit,
+        quantity: item.quantity,
+        costPrice: item.unitPrice,
+      });
+    });
+
+    // 3. Lưu lại vào localStorage
+    history[index] = updatedOrder;
+    try {
+      localStorage.setItem(PO_STORAGE_KEY, JSON.stringify(history));
+    } catch {
+      // ignore
+    }
+
+    return updatedOrder;
+  },
+
+  // Hủy đơn hàng (nếu đơn chưa xuất kho hoặc đang chờ duyệt)
+  cancelOrder(orderId: string, reason?: string): PurchaseOrderRecord {
+    const history = this.getOrderHistory();
+    const index = history.findIndex((o) => o.id === orderId);
+    if (index === -1) {
+      throw new Error('Không tìm thấy đơn nhập hàng.');
+    }
+
+    const order = history[index];
+    if (order.status === 'RECEIVED') {
+      throw new Error('Đơn hàng đã nhận hàng vào kho, không thể hủy đơn.');
+    }
+
+    const updatedOrder: PurchaseOrderRecord = {
+      ...order,
+      status: 'CANCELLED',
+      statusLabel: 'Đã hủy',
+      note: reason ? `${order.note ? order.note + ' | ' : ''}Lý do hủy: ${reason}` : order.note,
+    };
+
+    history[index] = updatedOrder;
+    try {
+      localStorage.setItem(PO_STORAGE_KEY, JSON.stringify(history));
+    } catch {
+      // ignore
+    }
+
+    return updatedOrder;
   },
 
   // Tạo Đơn Đặt Hàng B2B từ Xưởng (Trạng thái: PENDING / CHO_XAC_NHAN)
