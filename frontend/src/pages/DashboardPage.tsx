@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '../types/auth';
+import type {
+  FinancialSummary,
+  OperationsSummary,
+  TopSellingProduct,
+  CategoryDistributionData,
+} from '../types/analytics';
 import { authService } from '../services/authService';
+import { analyticsService } from '../services/analyticsService';
 import { Sidebar, type DashboardTab } from '../components/dashboard/Sidebar';
 import { Header } from '../components/dashboard/Header';
 import { StatsCards } from '../components/dashboard/StatsCards';
@@ -40,6 +47,43 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   const [activeMenu, setActiveMenu] = useState<DashboardTab>('OVERVIEW');
   const [timeRange, setTimeRange] = useState<'TODAY' | 'WEEK' | 'MONTH'>('MONTH');
+
+  // State lưu trữ dữ liệu thống kê từ Backend
+  const [financial, setFinancial] = useState<FinancialSummary | null>(null);
+  const [operations, setOperations] = useState<OperationsSummary | null>(null);
+  const [topProducts, setTopProducts] = useState<TopSellingProduct[]>([]);
+  const [categoryDist, setCategoryDist] = useState<CategoryDistributionData | null>(null);
+  const [loadingMetrics, setLoadingMetrics] = useState<boolean>(true);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
+
+  const fetchDashboardMetrics = useCallback(async () => {
+    setLoadingMetrics(true);
+    setMetricsError(null);
+    try {
+      const [financialData, operationsData, topProductsData, categoryDistData] =
+        await Promise.all([
+          analyticsService.getFinancialSummary(timeRange),
+          analyticsService.getOperationsSummary(timeRange),
+          analyticsService.getTopSellingProducts(timeRange, 5),
+          analyticsService.getCategoryDistribution(timeRange),
+        ]);
+      setFinancial(financialData);
+      setOperations(operationsData);
+      setTopProducts(topProductsData);
+      setCategoryDist(categoryDistData);
+    } catch (err: any) {
+      console.error('Lỗi khi tải dữ liệu thống kê:', err);
+      setMetricsError(
+        err?.response?.data?.detail || err?.message || 'Không thể kết nối đến máy chủ thống kê'
+      );
+    } finally {
+      setLoadingMetrics(false);
+    }
+  }, [timeRange]);
+
+  useEffect(() => {
+    fetchDashboardMetrics();
+  }, [fetchDashboardMetrics]);
 
   const handleLogout = () => {
     if (initialOnLogout) {
@@ -103,16 +147,33 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 </div>
               </div>
 
+              {/* Error Alert if fetching metrics failed */}
+              {metricsError && (
+                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl flex items-center justify-between">
+                  <span>⚠️ {metricsError}</span>
+                  <button
+                    onClick={fetchDashboardMetrics}
+                    className="font-bold underline hover:text-amber-950 cursor-pointer"
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              )}
+
               {/* KPI Summary Cards */}
-              <StatsCards />
+              <StatsCards
+                financial={financial}
+                operations={operations}
+                loading={loadingMetrics}
+              />
 
               {/* Main Content Grid: Top Selling Products & Category Diversity */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                  <TopSellingProducts />
+                  <TopSellingProducts products={topProducts} loading={loadingMetrics} />
                 </div>
                 <div>
-                  <CategoryDistribution />
+                  <CategoryDistribution data={categoryDist} loading={loadingMetrics} />
                 </div>
               </div>
 
