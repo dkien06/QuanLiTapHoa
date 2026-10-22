@@ -12,8 +12,8 @@ import type {
   FastApiValidationErrorItem,
 } from '../types/auth';
 
-// Chuyển sang false khi backend đã sẵn sàng
-const MOCK_MODE = false;
+// Chuyển sang false khi backend đã sẵn sàng và đang chạy
+const MOCK_MODE = true;
 
 class CustomAuthError extends Error implements AuthError {
   code?: string;

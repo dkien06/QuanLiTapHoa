@@ -1,30 +1,34 @@
 import React from 'react';
-import { Layers, Sparkles } from 'lucide-react';
-
-export interface CategoryStatItem {
-  name: string;
-  distinctCount: number;
-  percent: number;
-  color: string;
-}
+import { Layers, Sparkles, AlertCircle } from 'lucide-react';
+import type { CategoryDistributionData } from '../../types/analytics';
 
 interface CategoryDistributionProps {
-  categories?: CategoryStatItem[];
+  data?: CategoryDistributionData | null;
+  loading?: boolean;
 }
 
-const defaultCategories: CategoryStatItem[] = [
-  { name: 'Thực phẩm khô & Đóng gói', distinctCount: 38, percent: 35, color: 'bg-blue-500' },
-  { name: 'Đồ uống & Giải khát', distinctCount: 26, percent: 24, color: 'bg-emerald-500' },
-  { name: 'Bánh kẹo & Ăn vặt', distinctCount: 22, percent: 20, color: 'bg-amber-500' },
-  { name: 'Gia vị & Thực phẩm chế biến', distinctCount: 14, percent: 13, color: 'bg-purple-500' },
-  { name: 'Hóa mỹ phẩm & Tẩy rửa', distinctCount: 9, percent: 8, color: 'bg-rose-500' },
-];
-
 export const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
-  categories = defaultCategories,
+  data,
+  loading = false,
 }) => {
+  const categories = data?.categories || [];
+  const colors = [
+  'bg-blue-500',
+  'bg-emerald-500',
+  'bg-amber-500',
+  'bg-purple-500',
+  'bg-rose-500',
+  'bg-indigo-500',
+  'bg-teal-500',
+  'bg-cyan-500',
+];
+  const totalProducts = data?.total_products || 0;
+  const businessInsight =
+    data?.business_insight ||
+    'Chưa có dữ liệu giao dịch trong kỳ này để đưa ra gợi ý kinh doanh.';
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between h-full">
       <div>
         <div className="flex items-center space-x-2 pb-4 border-b border-slate-100">
           <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
@@ -32,35 +36,66 @@ export const CategoryDistribution: React.FC<CategoryDistributionProps> = ({
           </div>
           <div>
             <h4 className="text-sm font-bold text-slate-900">Phân Bổ Mặt Hàng Đã Bán</h4>
-            <p className="text-xs text-slate-400">109 sản phẩm phân bổ qua 5 ngành hàng</p>
+            <p className="text-xs text-slate-400">
+              {totalProducts} sản phẩm phân bổ qua {categories.length} ngành hàng
+            </p>
           </div>
         </div>
 
-        <div className="space-y-4 mt-4">
-          {categories.map((item) => (
-            <div key={item.name} className="space-y-1.5">
-              <div className="flex justify-between text-xs font-semibold text-slate-700">
-                <span className="truncate pr-2">{item.name}</span>
-                <span className="shrink-0 text-slate-900 font-bold">
-                  {item.distinctCount} mặt hàng ({item.percent}%)
-                </span>
+        {/* Loading Skeleton */}
+        {loading ? (
+          <div className="space-y-4 mt-4 animate-pulse">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between">
+                  <div className="h-3 bg-slate-200 rounded w-28"></div>
+                  <div className="h-3 bg-slate-200 rounded w-16"></div>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2"></div>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.percent}%` }} />
-              </div>
+            ))}
+          </div>
+        ) : categories.length === 0 ? (
+          /* Empty State khi chưa có dữ liệu ngành hàng */
+          <div className="py-10 flex flex-col items-center justify-center text-center space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5" />
             </div>
-          ))}
-        </div>
+            <p className="text-xs font-bold text-slate-600">Chưa có dữ liệu ngành hàng</p>
+            <p className="text-[11px] text-slate-400 max-w-xs">
+              Các mặt hàng được bán sẽ được tự động phân loại và tính tỷ lệ đóng góp tại đây.
+            </p>
+          </div>
+        ) : (
+          /* Categories Progress Bars */
+          <div className="space-y-4 mt-4">
+            {categories.map((item,idx) => (
+              <div key={item.name} className="space-y-1.5">
+                <div className="flex justify-between text-xs font-semibold text-slate-700">
+                  <span className="truncate pr-2">{item.name}</span>
+                  <span className="shrink-0 text-slate-900 font-bold">
+                    {item.distinct_count} mặt hàng ({item.percent}%)
+                  </span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`${colors[idx % colors.length]} h-2 rounded-full transition-all duration-500`}
+                    style={{ width: `${Math.min(item.percent, 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* Smart Business Insight Box */}
       <div className="mt-6 p-4 rounded-xl bg-blue-50/60 border border-blue-100/80 text-xs text-blue-900 space-y-1">
         <div className="flex items-center space-x-1.5 font-bold">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
           <span>Gợi ý kinh doanh</span>
         </div>
-        <p className="text-[11px] text-blue-700 leading-relaxed">
-          Các mặt hàng mì gói & nước ngọt chiếm 59% doanh số bán lẻ. Nên nhập thêm tồn kho an toàn trước cuối tuần.
-        </p>
+        <p className="text-slate-600 leading-relaxed text-[11px]">{businessInsight}</p>
       </div>
     </div>
   );

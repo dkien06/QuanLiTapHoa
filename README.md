@@ -163,45 +163,7 @@ npm run dev
 
 ---
 
-## 📁 Cấu trúc thư mục
 
-```
-FastAPIProject/
-├── backend/
-│   ├── app/
-│   │   ├── core/           # Config, Database, Security, SQL schema
-│   │   ├── models/         # SQLAlchemy ORM models
-│   │   ├── routers/        # API endpoints (auth, inventory, pos)
-│   │   ├── schemas/        # Pydantic request/response schemas
-│   │   ├── services/       # Business logic
-│   │   ├── repository/     # Database queries
-│   │   └── main.py         # FastAPI app entry point
-│   ├── .env.example        # Mẫu biến môi trường
-│   └── requirements.txt    # Thư viện Python
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── pages/          # Các trang (Login, Register, Dashboard)
-│   │   ├── services/       # Axios API client
-│   │   └── types/          # TypeScript types
-│   └── package.json
-├── docs/                   # Tài liệu bổ sung
-├── DATABASE_SCHEMA.md      # Mô tả chi tiết schema database
-├── BUSINESS_LOGIC.md       # Mô tả logic nghiệp vụ
-└── README.md
-```
-
----
-
-## 🔗 API Endpoints chính
-
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `POST` | `/api/v1/auth/register` | Đăng ký tài khoản + tạo cửa hàng |
-| `POST` | `/api/v1/auth/login` | Đăng nhập, nhận JWT token |
-| `GET` | `/api/v1/auth/me` | Lấy thông tin tài khoản hiện tại |
-
-> Xem đầy đủ tại: `http://localhost:8000/docs`
 
 ---
 
