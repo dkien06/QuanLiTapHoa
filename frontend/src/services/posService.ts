@@ -163,16 +163,22 @@ export const posService = {
     );
   },
 
-  // Tìm kiếm theo từ khóa (tên hoặc barcode)
+  // Tìm kiếm theo từ khóa (tên hoặc barcode - hỗ trợ cả tiếng Việt không dấu)
   searchProducts(keyword: string): Product[] {
     const query = keyword.trim().toLowerCase();
     if (!query) return [];
-    return MOCK_PRODUCTS.filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) ||
+    const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+    return MOCK_PRODUCTS.filter((p) => {
+      const nameLower = p.name.toLowerCase();
+      const nameNorm = nameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+      const catNorm = (p.categoryName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+      return (
+        nameLower.includes(query) ||
+        nameNorm.includes(normalizedQuery) ||
         p.barcode.toLowerCase().includes(query) ||
-        (p.categoryName && p.categoryName.toLowerCase().includes(query))
-    );
+        catNorm.includes(normalizedQuery)
+      );
+    });
   },
 
   // Lưu và xử lý đơn hàng bán lẻ POS

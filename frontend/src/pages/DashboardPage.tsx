@@ -16,7 +16,7 @@ import { TopSellingProducts } from '../components/dashboard/TopSellingProducts';
 import { CategoryDistribution } from '../components/dashboard/CategoryDistribution';
 import { QuickActions } from '../components/dashboard/QuickActions';
 import { PosPlaceholder } from '../components/dashboard/PosPlaceholder';
-import { InventoryPlaceholder } from '../components/dashboard/InventoryPlaceholder';
+import { InventoryPage } from './InventoryPage';
 
 interface DashboardPageProps {
   user?: User;
@@ -183,7 +183,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           ) : activeMenu === 'POS' ? (
             <PosPlaceholder onBackToOverview={() => setActiveMenu('OVERVIEW')} />
           ) : (
-            <InventoryPlaceholder onBackToOverview={() => setActiveMenu('OVERVIEW')} />
+            <InventoryPage embeddedInDashboard />
           )}
         </main>
       </div>
