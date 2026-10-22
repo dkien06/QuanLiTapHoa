@@ -13,7 +13,7 @@ import type {
 } from '../types/auth';
 
 // Chuyển sang false khi backend đã sẵn sàng và đang chạy
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 class CustomAuthError extends Error implements AuthError {
   code?: string;
