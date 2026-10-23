@@ -149,7 +149,7 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
-### Bước 5: Cài đặt & chạy Frontend
+### Bước 5: Cài đặt & chạy Frontend   
 
 Mở **terminal mới** (giữ nguyên terminal backend đang chạy):
 

@@ -1,12 +1,9 @@
 import type { Product, SaleOrderDraft, BankConfig, CreateOrderResult } from '../types/pos';
+import { MOCK_BANK_CONFIG } from '../mock/mockConfig';
+import { MOCK_ACTIVE_PRODUCTS } from '../mock/mockProducts';
 
-// Cấu hình tài khoản ngân hàng thụ hưởng mặc định của tiệm tạp hóa
-export const DEFAULT_BANK_CONFIG: BankConfig = {
-  bankId: 'VCB', // Vietcombank
-  bankName: 'Vietcombank - TMCP Ngoại Thương VN',
-  accountNo: '9893456313816',
-  accountName: 'NGUYEN VAN AN - TIEM BINH AN',
-};
+// Re-export từ mockConfig để các module khác vẫn có thể import qua posService
+export const DEFAULT_BANK_CONFIG: BankConfig = MOCK_BANK_CONFIG;
 
 // Hàm sinh URL ảnh mã VietQR động theo chuẩn mở Napas/VietQR
 export const generateVietQRUrl = (
@@ -20,109 +17,8 @@ export const generateVietQRUrl = (
   return `https://img.vietqr.io/image/${bank.bankId}-${bank.accountNo}-compact2.png?amount=${cleanAmount}&addInfo=${encodedInfo}&accountName=${encodedName}`;
 };
 
-// Danh sách sản phẩm mẫu phong phú đặc trưng cho tiệm tạp hóa Việt Nam
-export const MOCK_PRODUCTS: Product[] = [
-  {
-    id: 'prod-001',
-    barcode: '8934563138164',
-    name: 'Mì Hảo Hảo Tôm chua cay 75g',
-    unit: 'gói',
-    price: 4500,
-    costPrice: 3800,
-    stockQuantity: 120,
-    categoryName: 'Mì & Thực phẩm ăn liền',
-  },
-  {
-    id: 'prod-002',
-    barcode: '8935049500115',
-    name: 'Nước ngọt Coca-Cola Sleek lon 320ml',
-    unit: 'lon',
-    price: 10000,
-    costPrice: 8200,
-    stockQuantity: 48,
-    categoryName: 'Nước giải khát',
-  },
-  {
-    id: 'prod-003',
-    barcode: '8934822212330',
-    name: 'Bia Heineken Sleek lon 330ml',
-    unit: 'lon',
-    price: 22000,
-    costPrice: 18500,
-    stockQuantity: 24,
-    categoryName: 'Bia & Đồ uống có cồn',
-  },
-  {
-    id: 'prod-004',
-    barcode: '8934673123456',
-    name: 'Sữa tươi tiệt trùng Vinamilk 100% Có đường 180ml',
-    unit: 'hộp',
-    price: 9000,
-    costPrice: 7500,
-    stockQuantity: 40,
-    categoryName: 'Sữa & Bơ sữa',
-  },
-  {
-    id: 'prod-005',
-    barcode: '8934567890123',
-    name: 'Dầu ăn Tường An Cooking Oil chai 1L',
-    unit: 'chai',
-    price: 52000,
-    costPrice: 46000,
-    stockQuantity: 15,
-    categoryName: 'Gia vị & Dầu ăn',
-  },
-  {
-    id: 'prod-006',
-    barcode: '8936017360211',
-    name: 'Nước mắm Nam Ngư Đệ Nhị chai 900ml',
-    unit: 'chai',
-    price: 34000,
-    costPrice: 29000,
-    stockQuantity: 10,
-    categoryName: 'Gia vị & Dầu ăn',
-  },
-  {
-    id: 'prod-007',
-    barcode: '8936036010012',
-    name: 'Bánh Chocopie Orion hộp 12 cái',
-    unit: 'hộp',
-    price: 58000,
-    costPrice: 50000,
-    stockQuantity: 20,
-    categoryName: 'Bánh kẹo & Ăn vặt',
-  },
-  {
-    id: 'prod-008',
-    barcode: '8935001234567',
-    name: 'Kẹo cao su Cool Air vỉ bạc hà',
-    unit: 'vỉ',
-    price: 7000,
-    costPrice: 5500,
-    stockQuantity: 3, // Dùng để test cảnh báo tồn kho thấp / vượt tồn kho
-    categoryName: 'Bánh kẹo & Ăn vặt',
-  },
-  {
-    id: 'prod-009',
-    barcode: '8934822119988',
-    name: 'Nước xả vải Comfort Đậm Đặc Ban Mai túi 800ml',
-    unit: 'túi',
-    price: 65000,
-    costPrice: 58000,
-    stockQuantity: 1, // Dùng để test cảnh báo sắp hết hàng
-    categoryName: 'Hóa mỹ phẩm & Tẩy rửa',
-  },
-  {
-    id: 'prod-010',
-    barcode: '8934822001122',
-    name: 'Xà phòng Lifebuoy Bảo vệ vượt trội 90g',
-    unit: 'bánh',
-    price: 16000,
-    costPrice: 13000,
-    stockQuantity: 0, // Dùng để test cảnh báo hết hàng hoàn toàn
-    categoryName: 'Hóa mỹ phẩm & Tẩy rửa',
-  },
-];
+// Re-export từ mockProducts.ts để các module khác vẫn import được qua posService
+export const MOCK_PRODUCTS: Product[] = MOCK_ACTIVE_PRODUCTS;
 
 // Hàm phát âm thanh beep của máy quét mã vạch POS
 export const playScannerBeep = () => {

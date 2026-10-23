@@ -5,7 +5,7 @@ import type {
   InventoryFilterParams,
   InventoryStats,
 } from '../types/inventory';
-import { MOCK_PRODUCTS } from './posService';
+import { MOCK_ACTIVE_PRODUCTS as MOCK_PRODUCTS } from '../mock/mockProducts';
 
 const STORAGE_KEY = 'inventory_products_store';
 

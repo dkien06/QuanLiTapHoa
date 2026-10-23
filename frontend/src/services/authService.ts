@@ -1,4 +1,4 @@
-import api from './api';
+﻿import api from './api';
 import type {
   LoginCredentials,
   RegisterCredentials,
@@ -12,8 +12,7 @@ import type {
   FastApiValidationErrorItem,
 } from '../types/auth';
 
-// Chuyển sang false khi backend đã sẵn sàng và đang chạy
-const MOCK_MODE = false;
+import { MOCK_MODE, MOCK_USERS, MOCK_ACTIVE_USER_INDEX, MOCK_DELAY_MS } from '../mock/mockConfig';
 
 class CustomAuthError extends Error implements AuthError {
   code?: string;
@@ -32,7 +31,7 @@ class CustomAuthError extends Error implements AuthError {
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     if (MOCK_MODE) {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
 
       const fieldErrors: Record<string, string> = {};
       if (!credentials.username?.trim()) {
@@ -72,15 +71,8 @@ export const authService = {
       }
 
       const mockUser: User = {
-        id: '8d45950f-a79c-4891-a413-b8e80515c624',
-        username: credentials.username || 'tiem_binh_an',
-        fullName: 'Nguyễn Văn An',
-        phone: '0901234567',
-        role: 'OWNER',
-        storeId: 'df935abc-4021-4c20-bad4-3241e85ca2b2',
-        storeType: 'GROCERY',
-        storeName: 'Tạp hóa Bình An',
-        storeAddress: '123 Nguyễn Trãi',
+        ...MOCK_USERS[MOCK_ACTIVE_USER_INDEX],
+        username: credentials.username || MOCK_USERS[MOCK_ACTIVE_USER_INDEX].username,
       };
 
       const token = `access-token-${Date.now()}`;
@@ -128,7 +120,7 @@ export const authService = {
 
   async register(data: RegisterCredentials): Promise<RegisterResponse> {
     if (MOCK_MODE) {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
 
       const fieldErrors: Record<string, string> = {};
       if (!data.username?.trim()) fieldErrors.username = 'Tên đăng nhập không được để trống.';
