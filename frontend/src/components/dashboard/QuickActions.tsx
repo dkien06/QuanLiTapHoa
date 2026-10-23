@@ -1,13 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { DashboardTab } from './Sidebar';
 import { ShoppingCart, Boxes, FileSpreadsheet, PlusCircle, ArrowUpRight } from 'lucide-react';
-
-interface QuickActionsProps {
-  onNavigate: (tab: DashboardTab) => void;
-}
-
-export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
+export const QuickActions: React.FC = () => {
   const navigate = useNavigate();
 
   return (
@@ -31,7 +25,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
 
       <button
         type="button"
-        onClick={() => onNavigate('INVENTORY')}
+        onClick={() => navigate('/inventory')}
         className="p-4 bg-white border border-slate-200 text-slate-800 rounded-2xl shadow-xs hover:border-blue-400 hover:shadow-sm transition flex items-center justify-between cursor-pointer"
       >
         <div className="flex items-center space-x-3 text-left">

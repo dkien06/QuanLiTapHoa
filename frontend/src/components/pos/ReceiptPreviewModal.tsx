@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import type { SaleOrderDraft } from '../../types/pos';
+import { MOCK_DEFAULT_USER } from '../../mock/mockConfig';
 import { Printer, CheckCircle, RotateCcw, X, Store, QrCode } from 'lucide-react';
 
 interface ReceiptPreviewModalProps {
@@ -116,10 +117,10 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({
                   <Store className="w-4 h-4" />
                 </div>
                 <h2 className="text-sm font-black tracking-tight uppercase text-slate-900 leading-tight">
-                  {order.storeName || 'TẠP HÓA BÌNH AN'}
+                  {order.storeName || MOCK_DEFAULT_USER.storeName}
                 </h2>
                 <p className="text-[10px] text-slate-500 leading-tight">
-                  {order.storeAddress || '123 Nguyễn Trãi, Q.5, TP.HCM'}
+                  {order.storeAddress || MOCK_DEFAULT_USER.storeAddress}
                 </p>
                 <p className="text-[10px] text-slate-500">Hotline: 0901.234.567</p>
 

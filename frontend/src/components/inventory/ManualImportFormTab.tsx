@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ManualImportPayload } from '../../types/purchaseOrder';
 import { purchaseOrderService } from '../../services/purchaseOrderService';
 import { inventoryService } from '../../services/inventoryService';
+import { MOCK_MANUAL_IMPORT_DEFAULTS, MOCK_MANUAL_IMPORT_EXAMPLES, MOCK_MANUAL_IMPORT_SUPPLIERS } from '../../mock/mockPurchaseOrders';
 import {
   Boxes,
   Barcode,
@@ -24,10 +25,10 @@ export const ManualImportFormTab: React.FC<ManualImportFormTabProps> = ({
   const [supplierName, setSupplierName] = useState<string>('');
   const [productName, setProductName] = useState<string>('');
   const [barcode, setBarcode] = useState<string>('');
-  const [unit, setUnit] = useState<string>('gói');
-  const [quantityInput, setQuantityInput] = useState<string>('50');
-  const [costPriceInput, setCostPriceInput] = useState<string>('3800');
-  const [sellingPriceInput, setSellingPriceInput] = useState<string>('4500');
+  const [unit, setUnit] = useState<string>(MOCK_MANUAL_IMPORT_DEFAULTS.unit);
+  const [quantityInput, setQuantityInput] = useState<string>(MOCK_MANUAL_IMPORT_DEFAULTS.quantity);
+  const [costPriceInput, setCostPriceInput] = useState<string>(MOCK_MANUAL_IMPORT_DEFAULTS.costPrice);
+  const [sellingPriceInput, setSellingPriceInput] = useState<string>(MOCK_MANUAL_IMPORT_DEFAULTS.sellingPrice);
   const [note, setNote] = useState<string>('');
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -65,13 +66,6 @@ export const ManualImportFormTab: React.FC<ManualImportFormTabProps> = ({
   const profitMargin = costPrice > 0 ? Math.round((profitPerItem / costPrice) * 100) : 0;
 
   // Gợi ý nhanh các nguồn nhập hàng ngoài phổ biến
-  const commonSuppliers = [
-    'Chợ đầu mối Bình Điền',
-    'Chợ đầu mối Thủ Đức',
-    'Đại lý bia nước ngọt Cô Lan',
-    'Nhà phân phối tạp hóa Hùng Thịnh',
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -132,7 +126,7 @@ export const ManualImportFormTab: React.FC<ManualImportFormTabProps> = ({
             type="text"
             value={supplierName}
             onChange={(e) => setSupplierName(e.target.value)}
-            placeholder="Ví dụ: Chợ đầu mối Bình Điền, Đại lý bia nước ngọt..."
+            placeholder={MOCK_MANUAL_IMPORT_EXAMPLES.supplier}
             className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
             required
           />
@@ -141,7 +135,7 @@ export const ManualImportFormTab: React.FC<ManualImportFormTabProps> = ({
         {/* Chip gợi ý nhanh tên nguồn */}
         <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
           <span className="text-[11px] text-slate-500 font-medium">Gợi ý nhanh:</span>
-          {commonSuppliers.map((sup) => (
+          {MOCK_MANUAL_IMPORT_SUPPLIERS.map((sup) => (
             <button
               key={sup}
               type="button"
@@ -194,7 +188,7 @@ export const ManualImportFormTab: React.FC<ManualImportFormTabProps> = ({
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              placeholder="VD: Mì Hảo Hảo tôm chua cay, Nước xả Comfort..."
+              placeholder={MOCK_MANUAL_IMPORT_EXAMPLES.product}
               className="w-full py-2 px-3 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
               required
             />
@@ -305,7 +299,7 @@ export const ManualImportFormTab: React.FC<ManualImportFormTabProps> = ({
             type="text"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Ví dụ: Hóa đơn đỏ số #1249, thanh toán tiền mặt trực tiếp..."
+            placeholder={MOCK_MANUAL_IMPORT_EXAMPLES.invoiceNote}
             className="w-full py-1.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>

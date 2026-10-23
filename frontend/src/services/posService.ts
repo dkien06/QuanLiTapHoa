@@ -1,6 +1,7 @@
 import type { Product, SaleOrderDraft, BankConfig, CreateOrderResult } from '../types/pos';
 import { MOCK_BANK_CONFIG } from '../mock/mockConfig';
 import { MOCK_ACTIVE_PRODUCTS } from '../mock/mockProducts';
+import { requireMockMode } from '../mock/mockConfig';
 
 // Re-export từ mockConfig để các module khác vẫn có thể import qua posService
 export const DEFAULT_BANK_CONFIG: BankConfig = MOCK_BANK_CONFIG;
@@ -18,8 +19,6 @@ export const generateVietQRUrl = (
 };
 
 // Re-export từ mockProducts.ts để các module khác vẫn import được qua posService
-export const MOCK_PRODUCTS: Product[] = MOCK_ACTIVE_PRODUCTS;
-
 // Hàm phát âm thanh beep của máy quét mã vạch POS
 export const playScannerBeep = () => {
   try {
@@ -47,24 +46,27 @@ export const playScannerBeep = () => {
 export const posService = {
   // Lấy toàn bộ danh sách sản phẩm mock
   getAllProducts(): Product[] {
-    return MOCK_PRODUCTS;
+    requireMockMode('POS');
+    return MOCK_ACTIVE_PRODUCTS;
   },
 
   // Tìm sản phẩm chính xác theo mã barcode
   findProductByBarcode(barcode: string): Product | null {
+    requireMockMode('Tìm sản phẩm POS');
     const trimmed = barcode.trim().toLowerCase();
     if (!trimmed) return null;
     return (
-      MOCK_PRODUCTS.find((p) => p.barcode.toLowerCase() === trimmed) || null
+      MOCK_ACTIVE_PRODUCTS.find((p) => p.barcode.toLowerCase() === trimmed) || null
     );
   },
 
   // Tìm kiếm theo từ khóa (tên hoặc barcode - hỗ trợ cả tiếng Việt không dấu)
   searchProducts(keyword: string): Product[] {
+    requireMockMode('Tìm kiếm POS');
     const query = keyword.trim().toLowerCase();
     if (!query) return [];
     const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-    return MOCK_PRODUCTS.filter((p) => {
+    return MOCK_ACTIVE_PRODUCTS.filter((p) => {
       const nameLower = p.name.toLowerCase();
       const nameNorm = nameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
       const catNorm = (p.categoryName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
@@ -79,6 +81,7 @@ export const posService = {
 
   // Lưu và xử lý đơn hàng bán lẻ POS
   async createSalesOrder(order: SaleOrderDraft): Promise<CreateOrderResult> {
+    requireMockMode('Tạo đơn POS');
     await new Promise((resolve) => setTimeout(resolve, 350));
 
     // Đảm bảo thông tin ngân hàng và link VietQR
@@ -126,6 +129,7 @@ export const posService = {
 
   // Lấy danh sách lịch sử đơn hàng đã bán
   getOrderHistory(): SaleOrderDraft[] {
+    requireMockMode('Lịch sử POS');
     try {
       const historyStr = localStorage.getItem('pos_sales_history') || '[]';
       return JSON.parse(historyStr);

@@ -6,6 +6,8 @@ import type {
   InventoryStats,
 } from '../types/inventory';
 import { MOCK_ACTIVE_PRODUCTS as MOCK_PRODUCTS } from '../mock/mockProducts';
+import { requireMockMode } from '../mock/mockConfig';
+import { MOCK_DEFAULT_PRODUCT_CATEGORY, MOCK_DEFAULT_STOCK_ALERT, MOCK_IMPORTED_PRODUCT_CATEGORY, MOCK_STOCK_ALERTS } from '../mock/mockInventory';
 
 const STORAGE_KEY = 'inventory_products_store';
 
@@ -36,23 +38,15 @@ export const normalizeVietnamese = (str: string): string => {
 
 // Khởi tạo dữ liệu mẫu phong phú kế thừa từ posService và bổ sung ngưỡng cảnh báo
 const createInitialProducts = (): InventoryProduct[] => {
-  const customAlerts: Record<string, number> = {
-    'prod-008': 5, // Kẹo Cool Air: tồn 3, min 5 -> CRITICAL (Đỏ)
-    'prod-009': 5, // Nước xả Comfort: tồn 1, min 5 -> CRITICAL (Đỏ)
-    'prod-010': 10, // Xà phòng Lifebuoy: tồn 0, min 10 -> CRITICAL (Đỏ / Hết hàng)
-    'prod-006': 5, // Nước mắm Nam Ngư: tồn 10, min 5 -> LOW (Vàng)
-    'prod-005': 10, // Dầu ăn Tường An: tồn 15, min 10 -> NORMAL (Xanh)
-  };
-
   return MOCK_PRODUCTS.map((p) => {
-    const minAlert = customAlerts[p.id] ?? 5;
+    const minAlert = MOCK_STOCK_ALERTS[p.id] ?? MOCK_DEFAULT_STOCK_ALERT;
     const status = determineStockStatus(p.stockQuantity, minAlert);
     return {
       id: p.id,
       barcode: p.barcode,
       name: p.name,
       unit: p.unit,
-      categoryName: p.categoryName || 'Hàng tiêu dùng',
+      categoryName: p.categoryName || MOCK_DEFAULT_PRODUCT_CATEGORY,
       stockQuantity: p.stockQuantity,
       costPrice: p.costPrice || Math.round(p.price * 0.8),
       sellingPrice: p.price,
@@ -66,6 +60,7 @@ const createInitialProducts = (): InventoryProduct[] => {
 export const inventoryService = {
   // Lấy toàn bộ danh sách từ localStorage (hoặc nạp mẫu ban đầu)
   getAllProducts(): InventoryProduct[] {
+    requireMockMode('Quản lý kho');
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -89,6 +84,7 @@ export const inventoryService = {
 
   // Lưu danh sách sản phẩm vào localStorage
   saveProducts(products: InventoryProduct[]): void {
+    requireMockMode('Lưu kho mẫu');
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
     } catch {
@@ -260,13 +256,13 @@ export const inventoryService = {
       return updated;
     } else {
       // Chưa có trong kho -> Thêm sản phẩm mới vào danh mục
-      const minAlert = 5;
+      const minAlert = MOCK_DEFAULT_STOCK_ALERT;
       const newProduct: InventoryProduct = {
         id: `prod-${Date.now()}`,
         barcode: barcodeTrimmed,
         name: payload.name,
         unit: payload.unit,
-        categoryName: 'Hàng nhập ngoài',
+        categoryName: MOCK_IMPORTED_PRODUCT_CATEGORY,
         stockQuantity: payload.quantity,
         costPrice: payload.costPrice,
         sellingPrice: payload.sellingPrice || Math.round(payload.costPrice * 1.2),
@@ -282,6 +278,7 @@ export const inventoryService = {
 
   // Khôi phục dữ liệu gốc
   resetToDefault(): InventoryProduct[] {
+    requireMockMode('Khôi phục kho mẫu');
     const initial = createInitialProducts();
     this.saveProducts(initial);
     return initial;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { RegisterCredentials, StoreType } from '../../types/auth';
+import { MOCK_FORM_EXAMPLES } from '../../mock/mockConfig';
 import {
   User,
   Lock,
@@ -125,7 +126,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 required
                 value={formData.fullName}
                 onChange={handleChange}
-                placeholder="Nguyễn Văn An"
+                placeholder={MOCK_FORM_EXAMPLES.fullName}
                 className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:bg-white text-slate-800 text-xs transition-all ${
                   fieldErrors.fullName
                     ? 'border-red-400 focus:ring-red-500 bg-red-50/40'
@@ -155,7 +156,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 required
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="0901234567"
+                placeholder={MOCK_FORM_EXAMPLES.phone}
                 className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:bg-white text-slate-800 text-xs transition-all ${
                   fieldErrors.phone
                     ? 'border-red-400 focus:ring-red-500 bg-red-50/40'
@@ -188,7 +189,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 autoComplete="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder={isGrocery ? 'tiem_binh_an' : 'xuong_nong_san'}
+                placeholder={isGrocery ? MOCK_FORM_EXAMPLES.groceryUsername : MOCK_FORM_EXAMPLES.supplierUsername}
                 className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:bg-white text-slate-800 text-xs transition-all ${
                   fieldErrors.username
                     ? 'border-red-400 focus:ring-red-500 bg-red-50/40'
@@ -259,7 +260,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 required
                 value={formData.storeName}
                 onChange={handleChange}
-                placeholder={isGrocery ? 'Tạp hóa Bình An' : 'Xưởng Nông Sản Việt'}
+                placeholder={isGrocery ? MOCK_FORM_EXAMPLES.groceryStoreName : MOCK_FORM_EXAMPLES.supplierStoreName}
                 className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:bg-white text-slate-800 text-xs transition-all ${
                   fieldErrors.storeName
                     ? 'border-red-400 focus:ring-red-500 bg-red-50/40'
@@ -289,7 +290,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 required
                 value={formData.storePhone}
                 onChange={handleChange}
-                placeholder="0901234567"
+                placeholder={MOCK_FORM_EXAMPLES.phone}
                 className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:bg-white text-slate-800 text-xs transition-all ${
                   fieldErrors.storePhone
                     ? 'border-red-400 focus:ring-red-500 bg-red-50/40'
@@ -322,8 +323,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
               onChange={handleChange}
               placeholder={
                 isGrocery
-                  ? '123 Nguyễn Trãi, Phường 2, Quận 5, TP.HCM'
-                  : 'Khu công nghiệp Tân Bình, TP.HCM'
+                  ? MOCK_FORM_EXAMPLES.groceryAddress
+                  : MOCK_FORM_EXAMPLES.supplierAddress
               }
               className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:bg-white text-slate-800 text-xs transition-all ${
                 fieldErrors.storeAddress

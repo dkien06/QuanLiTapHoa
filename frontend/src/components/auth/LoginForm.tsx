@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { LoginCredentials } from '../../types/auth';
+import { MOCK_FORM_EXAMPLES } from '../../mock/mockConfig';
 import { User, Lock, Eye, EyeOff, LogIn, Loader2, AlertCircle } from 'lucide-react';
 
 interface LoginFormProps {
@@ -38,7 +39,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="tiem_binh_an"
+            placeholder={MOCK_FORM_EXAMPLES.groceryUsername}
             className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:bg-white text-slate-800 text-sm transition-all duration-200 ${
               fieldErrors.username
                 ? 'border-red-400 focus:ring-red-500 bg-red-50/40'

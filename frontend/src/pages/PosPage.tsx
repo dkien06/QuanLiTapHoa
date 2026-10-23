@@ -11,6 +11,7 @@ import type {
 } from '../types/pos';
 import { authService } from '../services/authService';
 import { posService } from '../services/posService';
+import { MOCK_DEFAULT_USER } from '../mock/mockConfig';
 import {
   BarcodeScannerInput,
   type BarcodeScannerInputRef,
@@ -39,12 +40,7 @@ export const PosPage: React.FC = () => {
   // Thông tin người dùng / ca bán hàng
   const [currentUser] = useState(() => {
     return (
-      authService.getStoredUser() || {
-        fullName: 'Nguyễn Văn An',
-        username: 'tiem_binh_an',
-        storeName: 'Tạp hóa Bình An',
-        storeAddress: '123 Nguyễn Trãi, Q.5, TP.HCM',
-      }
+      authService.getStoredUser() || MOCK_DEFAULT_USER
     );
   });
 
@@ -229,8 +225,8 @@ export const PosPage: React.FC = () => {
         },
         paymentMethod: paymentData.paymentMethod,
         cashierName: currentUser.fullName || 'Thu ngân',
-        storeName: currentUser.storeName || 'Tạp hóa Bình An',
-        storeAddress: currentUser.storeAddress || '123 Nguyễn Trãi, Q.5, TP.HCM',
+        storeName: currentUser.storeName || MOCK_DEFAULT_USER.storeName,
+        storeAddress: currentUser.storeAddress || MOCK_DEFAULT_USER.storeAddress,
         bankInfo: paymentData.bankInfo,
       };
 
@@ -307,7 +303,7 @@ export const PosPage: React.FC = () => {
             </div>
             <div>
               <h1 className="font-bold text-xs sm:text-sm tracking-tight text-white leading-none">
-                {currentUser.storeName || 'TẠP HÓA BÌNH AN'}
+                {currentUser.storeName || MOCK_DEFAULT_USER.storeName}
               </h1>
               <span className="text-[10px] text-blue-300 font-medium">
                 Màn hình Bán lẻ Thu Ngân (POS) - Đơn #{currentOrderCode}

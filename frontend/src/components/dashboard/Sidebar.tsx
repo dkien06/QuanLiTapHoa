@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { User } from '../../types/auth';
 import { Store, ShoppingCart, Boxes, BarChart3, LogOut, MapPin } from 'lucide-react';
 import { inventoryService } from '../../services/inventoryService';
+import { MOCK_MODE, MOCK_DEFAULT_USER } from '../../mock/mockConfig';
 
 export type DashboardTab = 'OVERVIEW' | 'POS' | 'INVENTORY';
 
@@ -20,7 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
 }) => {
   const navigate = useNavigate();
-  const lowStockCount = inventoryService.getInventoryStats().lowStockCount;
+  const lowStockCount = MOCK_MODE ? inventoryService.getInventoryStats().lowStockCount : 0;
   return (
     <aside className="w-full md:w-64 bg-slate-900 text-white flex flex-col shrink-0 border-r border-slate-800">
       {/* Brand Header */}
@@ -52,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="pt-1.5 border-t border-slate-700/60 text-xs text-slate-300">
           <div className="font-medium text-white truncate flex items-center gap-1.5">
             <Store className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-            <span className="truncate">{user.storeName || 'Tạp hóa Bình An'}</span>
+            <span className="truncate">{user.storeName || MOCK_DEFAULT_USER.storeName}</span>
           </div>
           {user.storeAddress && (
             <div className="text-[11px] text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
@@ -94,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <button
           type="button"
-          onClick={() => onSelectMenu('INVENTORY')}
+          onClick={() => navigate('/inventory')}
           className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition cursor-pointer ${
             activeMenu === 'INVENTORY'
               ? 'bg-blue-600 text-white font-semibold shadow-sm'

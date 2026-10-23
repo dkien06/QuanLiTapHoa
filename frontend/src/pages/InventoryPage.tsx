@@ -9,6 +9,7 @@ import { EditProductModal } from '../components/inventory/EditProductModal';
 import { CreatePurchaseOrderModal } from '../components/inventory/CreatePurchaseOrderModal';
 import { PurchaseOrderList } from '../components/inventory/PurchaseOrderList';
 import { purchaseOrderService } from '../services/purchaseOrderService';
+import { MOCK_DEFAULT_USER } from '../mock/mockConfig';
 import {
   ArrowLeft,
   ShoppingCart,
@@ -30,10 +31,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ embeddedInDashboar
   // Thông tin tiệm
   const [currentUser] = useState(() => {
     return (
-      authService.getStoredUser() || {
-        fullName: 'Nguyễn Văn An',
-        storeName: 'Tạp hóa Bình An',
-      }
+      authService.getStoredUser() || MOCK_DEFAULT_USER
     );
   });
 
@@ -171,7 +169,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ embeddedInDashboar
               </div>
               <div>
                 <h1 className="font-bold text-sm tracking-tight text-white leading-none">
-                  {currentUser.storeName || 'TẠP HÓA BÌNH AN'}
+                  {currentUser.storeName || MOCK_DEFAULT_USER.storeName}
                 </h1>
                 <span className="text-xs text-blue-300 font-medium">
                   Quản Lý Tồn Kho & Cảnh Báo Hết Hàng

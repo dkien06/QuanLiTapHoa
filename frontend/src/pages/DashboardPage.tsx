@@ -17,6 +17,7 @@ import { CategoryDistribution } from '../components/dashboard/CategoryDistributi
 import { QuickActions } from '../components/dashboard/QuickActions';
 import { PosPlaceholder } from '../components/dashboard/PosPlaceholder';
 import { InventoryPage } from './InventoryPage';
+import { MOCK_MODE, MOCK_DEFAULT_USER } from '../mock/mockConfig';
 
 interface DashboardPageProps {
   user?: User;
@@ -31,17 +32,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const [currentUser] = useState<User>(() => {
     return (
       initialUser ||
-      authService.getStoredUser() || {
-        id: '8d45950f-a79c-4891-a413-b8e80515c624',
-        username: 'tiem_binh_an',
-        fullName: 'Nguyễn Văn An',
-        phone: '0901234567',
-        role: 'OWNER',
-        storeId: 'df935abc-4021-4c20-bad4-3241e85ca2b2',
-        storeType: 'GROCERY',
-        storeName: 'Tạp hóa Bình An',
-        storeAddress: '123 Nguyễn Trãi',
-      }
+      authService.getStoredUser() || MOCK_DEFAULT_USER
     );
   });
 
@@ -178,12 +169,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               </div>
 
               {/* Quick Actions Row */}
-              <QuickActions onNavigate={setActiveMenu} />
+              <QuickActions />
             </>
           ) : activeMenu === 'POS' ? (
-            <PosPlaceholder onBackToOverview={() => setActiveMenu('OVERVIEW')} />
-          ) : (
+            MOCK_MODE ? <PosPlaceholder onBackToOverview={() => setActiveMenu('OVERVIEW')} /> : (
+              <section className="rounded-2xl border border-amber-200 bg-white p-6 text-sm text-slate-700">
+                API bán hàng chưa được triển khai. Ở chế độ API, ứng dụng không dùng dữ liệu POS mẫu.
+              </section>
+            )
+          ) : MOCK_MODE ? (
             <InventoryPage embeddedInDashboard />
+          ) : (
+            <section className="rounded-2xl border border-amber-200 bg-white p-6 text-sm text-slate-700">
+              API kho chưa được triển khai. Ở chế độ API, ứng dụng không dùng dữ liệu kho mẫu.
+            </section>
           )}
         </main>
       </div>

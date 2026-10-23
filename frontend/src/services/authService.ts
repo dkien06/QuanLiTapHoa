@@ -12,7 +12,7 @@ import type {
   FastApiValidationErrorItem,
 } from '../types/auth';
 
-import { MOCK_MODE, MOCK_USERS, MOCK_ACTIVE_USER_INDEX, MOCK_DELAY_MS } from '../mock/mockConfig';
+import { MOCK_MODE, MOCK_USERS, MOCK_ACTIVE_USER_INDEX, MOCK_DELAY_MS, MOCK_AUTH_TRIGGERS } from '../mock/mockConfig';
 
 class CustomAuthError extends Error implements AuthError {
   code?: string;
@@ -51,7 +51,7 @@ export const authService = {
       }
 
       // Giả lập tài khoản bị khóa
-      if (credentials.username === 'locked_user') {
+      if (credentials.username === MOCK_AUTH_TRIGGERS.lockedUsername) {
         throw new CustomAuthError(
           'Tài khoản không hoạt động.',
           'ACCOUNT_INACTIVE',
@@ -61,7 +61,7 @@ export const authService = {
       }
 
       // Giả lập sai thông tin đăng nhập
-      if (credentials.password === 'wrong_password') {
+      if (credentials.password === MOCK_AUTH_TRIGGERS.wrongPassword) {
         throw new CustomAuthError(
           'Sai thông tin đăng nhập.',
           'UNAUTHORIZED',
@@ -141,7 +141,7 @@ export const authService = {
       }
 
       // Giả lập username đã tồn tại khi test
-      if (data.username === 'taken_user') {
+      if (data.username === MOCK_AUTH_TRIGGERS.takenUsername) {
         throw new CustomAuthError(
           'Tên đăng nhập đã tồn tại.',
           'USERNAME_TAKEN',
